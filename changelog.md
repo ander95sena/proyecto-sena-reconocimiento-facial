@@ -22,8 +22,10 @@ Todos los cambios importantes del proyecto serán documentados en este archivo.
 - Clase `Visualizer` para la visualización de información sobre la imagen.
 - Clase `Messages` para centralizar los mensajes del sistema.
 - Clase `serialArduino` para la comunicación serial con el microcontrolador.
+- Clase `serialArduinoDummy` para simulacion comunicación serial con el microcontrolador
 - Sistema de documentación mediante docstrings.
 - Configuración inicial de MkDocs para la documentación automática.
+- Conexion serial real y simulada
 
 ---
 
