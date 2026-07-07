@@ -11,11 +11,14 @@ import serial.tools.list_ports
 
 class DummySerial:
     """Simula una conexión serial cuando el Arduino no está disponible."""
+
     def __init__(self, puerto, baudrate):
         self.port = puerto
         self.baudrate = baudrate
         self.is_open = True
-        print(f"⚠️ No se pudo conectar al puerto {puerto}. Usando conexión simulada (Dummy).")
+        print(
+            f"⚠️ No se pudo conectar al puerto {puerto}. Usando conexión simulada (Dummy)."
+        )
 
     def write(self, data):
         print(f"[Dummy] Enviando datos simulados: {list(data)}")
