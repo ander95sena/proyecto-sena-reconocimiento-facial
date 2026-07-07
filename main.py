@@ -12,7 +12,24 @@ import serial.tools.list_ports
 
 
 class DummySerial:
-    """Simula una conexión serial cuando el Arduino no está disponible."""
+    """
+    Clase de simulación para una conexión serial cuando el Arduino
+    no está disponible o el puerto no puede abrirse.
+
+    Esta clase imita el comportamiento básico de un objeto `serial.Serial`,
+    permitiendo que el programa continúe ejecutándose en modo "simulado"
+    sin necesidad de hardware conectado. Es útil para pruebas, depuración
+    y desarrollo de lógica cuando el dispositivo físico no está presente.
+
+    Atributos:
+        port (str): Nombre del puerto simulado (ej. "COM3").
+        baudrate (int): Velocidad de transmisión simulada en baudios.
+        is_open (bool): Estado de la conexión (True si está "abierta").
+
+    Métodos:
+        write(data): Simula el envío de datos mostrando el contenido en consola.
+        close(): Cierra la conexión simulada y actualiza el estado interno.
+    """
 
     def __init__(self, puerto, baudrate):
         self.port = puerto
