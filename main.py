@@ -9,6 +9,22 @@ import time
 import serial.tools.list_ports
 
 
+class DummySerial:
+    """Simula una conexión serial cuando el Arduino no está disponible."""
+    def __init__(self, puerto, baudrate):
+        self.port = puerto
+        self.baudrate = baudrate
+        self.is_open = True
+        print(f"⚠️ No se pudo conectar al puerto {puerto}. Usando conexión simulada (Dummy).")
+
+    def write(self, data):
+        print(f"[Dummy] Enviando datos simulados: {list(data)}")
+
+    def close(self):
+        self.is_open = False
+        print("[Dummy] Conexión simulada cerrada")
+
+
 class serialArduino:
     """
     Clase para gestionar la comunicación serial entre Python y un Arduino.
@@ -37,30 +53,40 @@ class serialArduino:
         Cierra la conexión serial si está abierta y confirma la acción.
     """
 
-    def __init__(self):
-        self.puertoCom = "COM3"
-        self.baudios = 9600
+    def __init__(self, puerto="COM3", baudrate=9600):
+        self.puertoCom = puerto
+        self.baudios = baudrate
         self.conexion = None
 
     def iniciar(self):
-        """Establece la conexión serial con el Arduino y espera 2 segundos para inicializar."""
+        """Intenta establecer la conexión serial. Si falla, usa Dummy."""
+        try:
+            # Verificar si el puerto existe
+            puertos = [p.device for p in serial.tools.list_ports.comports()]
+            if self.puertoCom not in puertos:
+                raise serial.SerialException(f"Puerto {self.puertoCom} no encontrado")
 
-        self.conexion = serial.Serial(self.puertoCom, self.baudios)
-        time.sleep(2)
-        print(f"Conectado a {self.puertoCom} a {self.baudios} baudios")
+            self.conexion = serial.Serial(self.puertoCom, self.baudios)
+            time.sleep(2)
+            print(f"✅ Conectado a {self.puertoCom} a {self.baudios} baudios")
+
+        except serial.SerialException as e:
+            print(f"⚠️ Error de conectividad: {e}")
+            print("➡️ Activando conexión Dummy para pruebas de software.")
+            self.conexion = DummySerial(self.puertoCom, self.baudios)
 
     def enviarSeñal(self, dato: int):
-        """Envía un byte al Arduino (0–255)."""
+        """Envía un byte al Arduino o al Dummy."""
         if self.conexion and self.conexion.is_open:
             self.conexion.write(bytes([dato]))
         else:
             print("⚠️ No hay conexión abierta")
 
     def cerrar(self):
-        """Cierra la conexión serial si está abierta."""
+        """Cierra la conexión real o simulada."""
         if self.conexion and self.conexion.is_open:
             self.conexion.close()
-            print("Conexión cerrada")
+            print("🔌 Conexión cerrada")
 
 
 class Face:
