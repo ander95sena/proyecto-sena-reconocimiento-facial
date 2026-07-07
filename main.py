@@ -31,7 +31,7 @@ class DummySerial:
         close(): Cierra la conexión simulada y actualiza el estado interno.
     """
 
-    def __init__(self, puerto, baudrate):
+    def __init__(self, puerto:str, baudrate:int):
         self.port = puerto
         self.baudrate = baudrate
         self.is_open = True
@@ -75,7 +75,7 @@ class serialArduino:
         Cierra la conexión serial si está abierta y confirma la acción.
     """
 
-    def __init__(self, puerto="COM3", baudrate=9600):
+    def __init__(self, puerto:str="COM3", baudrate:int=9600):
         self.puertoCom = puerto
         self.baudios = baudrate
         self.conexion = None
@@ -153,7 +153,7 @@ class Face:
         Coordenada Y del centro de la caja.
     """
 
-    def __init__(self, bbox, landmarks, score):
+    def __init__(self, bbox:np.ndarray, landmarks:np.ndarray, score:float):
         """Inicializa un objeto Face con la caja delimitadora, landmarks y score."""
 
         self.bbox = bbox
@@ -215,7 +215,7 @@ class Detector:
         )
         self.app.prepare(ctx_id=0, det_size=(320, 320))
 
-    def detect(self, frame):
+    def detect(self, frame:np.ndarray):
         """Detecta rostros en un fotograma y devuelve una lista de objetos `Face`."""
 
         faces_raw = self.app.get(frame)
@@ -225,7 +225,7 @@ class Detector:
             faces.append(Face(f.bbox, landmarks, f.det_score))
         return faces
 
-    def get_main_face(self, faces):
+    def get_main_face(self, faces:list[Face]):
         """Selecciona el rostro principal de la lista, definido como el de mayor área."""
 
         face = max(faces, key=lambda f: f.w * f.h)
@@ -266,7 +266,7 @@ class Tracker:
     def __init__(self):
         self.kf = None
 
-    def init_filter(self, face):
+    def init_filter(self, face: Face):
         """Inicializa el filtro de Kalman con el estado inicial del rostro detectado."""
 
         # Estado: [x, y, w, h, vx, vy] -> Agregamos velocidades vx, vy
@@ -310,7 +310,7 @@ class Tracker:
         self.kf.R = np.eye(4) * 2.0  # Ruido de la medición (confianza en el detector)
         self.kf.Q = np.eye(6) * 0.1  # Ruido del proceso (dinámica del sistema)
 
-    def update(self, face):
+    def update(self, face: Face):
         """Actualiza el filtro con una nueva medición y devuelve el rostro actualizado."""
         if self.kf is None:
             self.init_filter(face)
@@ -353,20 +353,20 @@ class Visualizer:
 
     """
 
-    def draw_bbox(self, frame, face):
+    def draw_bbox(self, frame: np.ndarray, face: Face):
         """Dibuja la caja delimitadora del rostro en color verde sobre el fotograma."""
 
         x1, y1, x2, y2 = face.bbox.astype(int)
         cv.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
-    def draw_landmarks(self, frame, face):
+    def draw_landmarks(self, frame: np.ndarray, face: Face):
         """Dibuja los puntos clave (landmarks) del rostro en color azul sobre el fotograma."""
 
         if face.kps is not None:
             for lx, ly in face.kps.astype(int):
                 cv.circle(frame, (lx, ly), 2, (255, 0, 0), -1)
 
-    def draw_score(self, frame, face):
+    def draw_score(self, frame: np.ndarray, face: Face):
         """Muestra el puntaje de confianza de la detección sobre el rostro."""
 
         cv.putText(
@@ -379,7 +379,7 @@ class Visualizer:
             2,
         )
 
-    def draw_eyes(self, frame, face):
+    def draw_eyes(self, frame: np.ndarray, face: Face):
         """Dibuja rectángulos alrededor de los ojos usando landmarks específicos."""
 
         if face.kps is None or len(face.kps) < 90:
@@ -419,7 +419,7 @@ class Preprocessor:
         tensor listo para ser usado como entrada en un modelo de embeddings.
     """
 
-    def align_face(self, frame, face):
+    def align_face(self, frame: np.ndarray, face: Face):
         """Alinea el rostro detectado usando landmarks clave y devuelve la cara transformada."""
 
         # Seleccionamos landmarks clave: ojo izquierdo, ojo derecho y boca
@@ -448,7 +448,7 @@ class Preprocessor:
 
         return aligned
 
-    def preprocess(self, face_img):
+    def preprocess(self, face_img: np.ndarray):
         """Convierte la imagen a RGB, normaliza los valores de píxel y devuelve un tensor listo para el modelo."""
         face_rgb = cv.cvtColor(face_img, cv.COLOR_BGR2RGB)
         face_normalized = face_rgb.astype(np.float32) / 127.5 - 1.0
@@ -507,7 +507,7 @@ class FaceNetEmbedder:
         # Si no pasas un preprocessor, crea uno por defecto
         self.preprocessor = preprocessor if preprocessor else Preprocessor()
 
-    def get_embedding(self, frame, face):
+    def get_embedding(self, frame: np.ndarray, face: Face):
         """Obtiene el embedding de un rostro en un fotograma, aplicando alineación
         y preprocesamiento antes de la inferencia."""
 
@@ -517,7 +517,7 @@ class FaceNetEmbedder:
         embedding = self.session.run(None, {self.input_name: preprocessed})[0]
         return embedding[0]
 
-    def add_embedding(self, frame, face):
+    def add_embedding(self, frame: np.ndarray, face: Face):
         """Calcula el embedding de un rostro y lo guarda en el buffer interno."""
 
         emb = self.get_embedding(frame, face)
@@ -630,7 +630,7 @@ class EmbeddingCollector:
     -------
     count():
         Devuelve el número actual de embeddings recolectados.
-    add(embedding):
+    add(embedding: np.ndarray):
         Agrega un embedding a la lista si se cumple la condición de salto
         de frames.
     is_ready():
@@ -658,7 +658,7 @@ class EmbeddingCollector:
 
         return len(self.embeddings)
 
-    def add(self, embedding):
+    def add(self, embedding: np.ndarray):
         """Agrega un embedding a la lista si se cumple la condición de salto de frames."""
 
         self.frame_count += 1
@@ -700,12 +700,12 @@ class Messages:
 
     Métodos
     -------
-    Mensajecontador_muestras(frame, collector):
+    Mensajecontador_muestras(frame: np.ndarray, collector: EmbeddingCollector):
         Muestra en pantalla el número de muestras recolectadas sobre el total (30).
-    Mensajeresultado_verificacion(frame, resultado):
+    Mensajeresultado_verificacion(frame: np.ndarray, resultado: str):
         Muestra el resultado de la verificación ("AUTORIZADO" o "NO AUTORIZADO")
         en color verde o rojo según corresponda.
-    Mensajedistancia_promedio(frame, distancia_promedio):
+    Mensajedistancia_promedio(frame: np.ndarray, distancia_promedio: float):
         Muestra la distancia promedio (o similitud) calculada contra los embeddings
         de referencia, con tres decimales.
     MensajeResultado():
@@ -713,7 +713,7 @@ class Messages:
 
     """
 
-    def Mensajecontador_muestras(self, frame, collector):
+    def Mensajecontador_muestras(self, frame: np.ndarray, collector: EmbeddingCollector):
         """Muestra en pantalla el número de muestras recolectadas sobre el total (30)."""
 
         cv.putText(
@@ -726,7 +726,7 @@ class Messages:
             2,
         )
 
-    def Mensajeresultado_verificacion(self, frame, resultado):
+    def Mensajeresultado_verificacion(self, frame: np.ndarray, resultado: str):
         """Muestra el resultado de la verificación ("AUTORIZADO" o "NO AUTORIZADO")
         en color verde o rojo según corresponda."""
 
@@ -740,7 +740,7 @@ class Messages:
             2,
         )
 
-    def Mensajedistancia_promedio(self, frame, distancia_promedio):
+    def Mensajedistancia_promedio(self, frame: np.ndarray, distancia_promedio: float):
         """Muestra la distancia promedio (o similitud) calculada contra los embeddings
         de referencia, con tres decimales."""
 
