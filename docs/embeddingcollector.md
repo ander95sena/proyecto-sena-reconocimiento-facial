@@ -1,0 +1,3 @@
+# EmbeddingCollector
+
+::: main.EmbeddingCollector

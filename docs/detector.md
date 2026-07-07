@@ -1,0 +1,3 @@
+# Detector
+
+::: main.Detector

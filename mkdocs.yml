@@ -1,0 +1,28 @@
+site_name: Sistema de Reconocimiento Facial
+
+theme:
+  name: material
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: true
+            show_root_heading: true
+            show_root_full_path: false
+            show_signature_annotations: true
+
+nav:
+  - Inicio: index.md
+  - Embedding_Collector: embeddingcollector.md
+  - Detector: detector.md
+  - Tracker: tracker.md
+  - face: face.md
+  - face_recognition: facerecognition.md
+  - face_net_enbedder: facenetenbedeer.md
+  - messages: messages.md
+  - preprocessor: preprocessor.md
+  - serial_Arduino : serialArduino.md
+  - visualizer: visualizer.md
