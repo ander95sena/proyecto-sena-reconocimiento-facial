@@ -91,7 +91,7 @@ class serialArduino:
             self.conexion.close()
             print("🔌 Conexión cerrada")
 
-
+@dataclass
 class Face:
     """
     Representa una detección facial con su caja delimitadora, puntos de referencia
