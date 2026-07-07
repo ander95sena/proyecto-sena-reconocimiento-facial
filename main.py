@@ -31,7 +31,7 @@ class DummySerial:
         close(): Cierra la conexión simulada y actualiza el estado interno.
     """
 
-    def __init__(self, puerto:str, baudrate:int):
+    def __init__(self, puerto: str, baudrate: int):
         self.port = puerto
         self.baudrate = baudrate
         self.is_open = True
@@ -75,7 +75,7 @@ class serialArduino:
         Cierra la conexión serial si está abierta y confirma la acción.
     """
 
-    def __init__(self, puerto:str="COM3", baudrate:int=9600):
+    def __init__(self, puerto: str = "COM3", baudrate: int = 9600):
         self.puertoCom = puerto
         self.baudios = baudrate
         self.conexion = None
@@ -109,6 +109,7 @@ class serialArduino:
         if self.conexion and self.conexion.is_open:
             self.conexion.close()
             print("🔌 Conexión cerrada")
+
 
 @dataclass
 class Face:
@@ -153,7 +154,7 @@ class Face:
         Coordenada Y del centro de la caja.
     """
 
-    def __init__(self, bbox:np.ndarray, landmarks:np.ndarray, score:float):
+    def __init__(self, bbox: np.ndarray, landmarks: np.ndarray, score: float):
         """Inicializa un objeto Face con la caja delimitadora, landmarks y score."""
 
         self.bbox = bbox
@@ -215,7 +216,7 @@ class Detector:
         )
         self.app.prepare(ctx_id=0, det_size=(320, 320))
 
-    def detect(self, frame:np.ndarray):
+    def detect(self, frame: np.ndarray):
         """Detecta rostros en un fotograma y devuelve una lista de objetos `Face`."""
 
         faces_raw = self.app.get(frame)
@@ -225,7 +226,7 @@ class Detector:
             faces.append(Face(f.bbox, landmarks, f.det_score))
         return faces
 
-    def get_main_face(self, faces:list[Face]):
+    def get_main_face(self, faces: list[Face]):
         """Selecciona el rostro principal de la lista, definido como el de mayor área."""
 
         face = max(faces, key=lambda f: f.w * f.h)
@@ -713,7 +714,9 @@ class Messages:
 
     """
 
-    def Mensajecontador_muestras(self, frame: np.ndarray, collector: EmbeddingCollector):
+    def Mensajecontador_muestras(
+        self, frame: np.ndarray, collector: EmbeddingCollector
+    ):
         """Muestra en pantalla el número de muestras recolectadas sobre el total (30)."""
 
         cv.putText(
