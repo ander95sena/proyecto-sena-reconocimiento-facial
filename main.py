@@ -13,6 +13,7 @@ from config import (
     FRAMES_SIN_ROSTRO_PARA_RESET,
 )
 from conexionArduino import crear_conexion_arduino
+from messages import Messages
 
 from vision_core import (
     Detector,
@@ -115,79 +116,6 @@ class EmbeddingCollector:
 
         self.embeddings.clear()
 
-
-class Messages:
-    """
-    Clase para mostrar mensajes informativos en pantalla durante el proceso
-    de registro y verificación del conductor.
-
-    Esta clase encapsula la lógica de visualización con OpenCV (`cv.putText`)
-    para mostrar el conteo de muestras, resultados de verificación y métricas
-    de distancia/similitud. Facilita la depuración y la interacción visual
-    con el sistema de reconocimiento facial.
-
-    Métodos
-    -------
-    Mensajecontador_muestras(frame: np.ndarray, collector: EmbeddingCollector):
-        Muestra en pantalla el número de muestras recolectadas sobre el total (30).
-    Mensajeresultado_verificacion(frame: np.ndarray, resultado: str):
-        Muestra el resultado de la verificación ("AUTORIZADO" o "NO AUTORIZADO")
-        en color verde o rojo según corresponda.
-    Mensajedistancia_promedio(frame: np.ndarray, distancia_promedio: float):
-        Muestra la distancia promedio (o similitud) calculada contra los embeddings
-        de referencia, con tres decimales.
-    MensajeResultado(autorizado: bool):
-        Devuelve el texto del resultado de verificación según la variable `autorizado`.
-
-    """
-
-    def Mensajecontador_muestras(
-        self, frame: np.ndarray, collector: EmbeddingCollector
-    ):
-        """Muestra en pantalla el número de muestras recolectadas sobre el total (30)."""
-
-        cv.putText(
-            frame,
-            f"Muestras: {collector.count()}/{MAX_EMBEDDINGS}",
-            (20, 40),
-            cv.FONT_HERSHEY_SIMPLEX,
-            0.8,
-            (0, 255, 255),
-            2,
-        )
-
-    def Mensajeresultado_verificacion(self, frame: np.ndarray, resultado: str):
-        """Muestra el resultado de la verificación ("AUTORIZADO" o "NO AUTORIZADO")
-        en color verde o rojo según corresponda."""
-
-        cv.putText(
-            frame,
-            resultado,
-            (20, 80),
-            cv.FONT_HERSHEY_SIMPLEX,
-            0.8,
-            (0, 255, 0) if "AUTORIZADO" in resultado else (0, 0, 255),
-            2,
-        )
-
-    def Mensajedistancia_promedio(self, frame: np.ndarray, distancia_promedio: float):
-        """Muestra la distancia promedio (o similitud) calculada contra los embeddings
-        de referencia, con tres decimales."""
-
-        cv.putText(
-            frame,
-            f"DIST: {distancia_promedio:.3f}",
-            (20, 120),
-            cv.FONT_HERSHEY_SIMPLEX,
-            0.8,
-            (255, 255, 0),
-            2,
-        )
-
-    def MensajeResultado(self, autorizado: bool):
-        """Devuelve el texto del resultado de verificación según la variable `autorizado`."""
-
-        resultado = "CONDUCTOR AUTORIZADO" if autorizado else "CONDUCTOR NO AUTORIZADO"
         return resultado
 
 
@@ -297,14 +225,16 @@ if __name__ == "__main__":
                     embedding = embedder.get_embedding(frame, face)
                     collector.add(embedding)
 
-                messager.Mensajecontador_muestras(frame, collector)
+                messager.mostrar_contador_muestras(frame, collector.count(), MAX_EMBEDDINGS)
 
                 if collector.is_ready():
                     embedding_actual = collector.get_average()
 
                     autorizado, distancia_promedio = recognizer.verify(embedding_actual)
 
-                    resultado = messager.MensajeResultado(autorizado)
+                    resultado = messager.mostrar_resultado_verificacion(frame, autorizado)
+
+                    messager.mostrar_distancia_promedio(frame, distancia_promedio)
 
                     collector.reset()
             else:
@@ -319,9 +249,10 @@ if __name__ == "__main__":
                     arduino.write(bytes([0]))
 
             if resultado:
-                messager.Mensajeresultado_verificacion(frame, resultado)
 
-                messager.Mensajedistancia_promedio(frame, distancia_promedio)
+                messager.mostrar_resultado_verificacion(frame, autorizado)
+                messager.mostrar_distancia_promedio(frame, distancia_promedio)
+
 
                 # Enviar señal al Arduino según el resultado
 
