@@ -18,6 +18,7 @@ from config import (
     P_KALMAN,
     Q_KALMAN,
     R_KALMAN,
+    FRAMES_SIN_ROSTRO_PARA_RESET
 )
 
 
@@ -327,6 +328,10 @@ class Tracker:
         # Actualizamos el objeto Face original con la predicción filtrada
         face.bbox = np.array([x, y, x + w, y + h], dtype=np.float32)
         return face
+    
+    def reset(self):
+        """Limpia el filtro para forzar una reinicialización en la próxima detección."""
+        self.kf = None
 
 
 class Visualizer:
@@ -807,6 +812,8 @@ if __name__ == "__main__":
 
     señal_arduino = 0  # 0 para no autorizado, 1 para autorizado
 
+    frames_sin_rostro = 0 # Contador de frames sin detección de rostro
+
     try:
         while True:
             ret, frame = cap.read()
@@ -817,6 +824,9 @@ if __name__ == "__main__":
             faces = detector.detect(frame)
 
             if faces:
+
+                frames_sin_rostro = 0  # Reiniciar contador si se detecta un rostro
+
                 face = detector.get_main_face(faces)
 
                 face = tracker.update(face, P_KALMAN, Q_KALMAN, R_KALMAN)
@@ -845,6 +855,17 @@ if __name__ == "__main__":
                     resultado = messager.MensajeResultado(autorizado)
 
                     collector.reset()
+            else:
+                frames_sin_rostro += 1
+
+                if frames_sin_rostro >= FRAMES_SIN_ROSTRO_PARA_RESET:
+                    tracker.reset()
+                    collector.reset()
+                    resultado = ""
+                    distancia_promedio = 0.0
+                    frames_sin_rostro = 0
+                    arduino.enviarSeñal(0)
+
 
             if resultado:
                 messager.Mensajeresultado_verificacion(frame, resultado)
