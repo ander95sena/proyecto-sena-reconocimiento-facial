@@ -286,6 +286,49 @@ class Messages:
 
 
 if __name__ == "__main__":
+
+    """
+        Punto de entrada principal del sistema de verificación de conductor mediante
+        reconocimiento facial y comunicación con Arduino.
+
+        Este bloque inicializa todos los componentes necesarios para el proceso:
+
+        - Conexión serial con Arduino (`serialArduino`), con fallback a Dummy si no hay hardware.
+        - Detector de rostros (`Detector`) y tracker con filtro de Kalman (`Tracker`).
+        - Visualizador (`Visualizer`) para dibujar bounding boxes, landmarks, ojos y puntajes.
+        - Mensajero (`Messages`) para mostrar resultados y métricas en pantalla.
+        - Preprocesador (`Preprocessor`) y generador de embeddings (`FaceNetEmbedder`).
+        - Carga de embeddings de referencia desde `conductor.json`.
+        - Reconocedor (`FaceRecognition`) que compara embeddings en vivo contra los registrados.
+        - Colector de embeddings (`EmbeddingCollector`) que promedia muestras en varios frames.
+        - Captura de video con OpenCV (`cv.VideoCapture`).
+
+        Flujo de ejecución:
+        -------------------
+        1. Se abre la cámara y se inicializan variables de estado.
+        2. En cada frame:
+        - Se detecta el rostro principal y se actualiza con el tracker.
+        - Se dibujan anotaciones visuales en la imagen.
+        - Se muestrean embeddings periódicamente y se acumulan en el colector.
+        - Cuando hay suficientes muestras, se calcula el embedding promedio y se verifica.
+        - Se muestra en pantalla el resultado (autorizado/no autorizado) y la distancia promedio.
+        - Se envía una señal al Arduino (1 = autorizado, 0 = no autorizado).
+        - Si no se detecta rostro por varios frames consecutivos, se reinician tracker y colector.
+        3. El bucle termina al presionar ESC o 'q'.
+        4. Se liberan recursos: cámara, ventanas de OpenCV y conexión serial.
+
+        Variables clave:
+        ----------------
+        - resultado (str): Mensaje de verificación actual.
+        - distancia_promedio (float): Distancia promedio de similitud entre embeddings.
+        - señal_arduino (int): Señal enviada al Arduino (0 o 1).
+        - frames_sin_rostro (int): Contador de frames sin detección de rostro.
+
+        Este bloque asegura la integración completa entre visión artificial,
+        procesamiento biométrico y control electrónico del vehículo.
+    """
+
+
     arduino = serialArduino()
 
     arduino.iniciar()
