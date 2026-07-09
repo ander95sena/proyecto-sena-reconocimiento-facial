@@ -7,8 +7,8 @@ from insightface.app import FaceAnalysis
 from filterpy.kalman import KalmanFilter
 import onnxruntime as ort
 import serial
-import time
-import serial.tools.list_ports
+import times
+import serial.tools.list_ports 
 
 
 class DummySerial:
@@ -564,23 +564,23 @@ class FaceRecognition:
 
     """
 
-    def __init__(self, embeddings_registro, umbral=0.7):
+    def __init__(self, embeddings_registro: list[np.ndarray], umbral: float = 0.7):
         """Inicializa el sistema de verificación con embeddings de registro y un umbral de distancia."""
 
         self.embeddings_registro = embeddings_registro
         self.umbral = umbral
 
-    def normalize(self, embedding):
+    def normalize(self, embedding: np.ndarray):
         """Normaliza un embedding dividiéndolo por su norma L2."""
 
         return embedding / np.linalg.norm(embedding)
 
-    def euclidian_distance(self, a, b):
+    def euclidian_distance(self, a: np.ndarray, b: np.ndarray):
         """Calcula la distancia euclidiana entre dos embeddings."""
 
         return float(np.linalg.norm(a - b))
 
-    def verify(self, embedding_actual):
+    def verify(self, embedding_actual: np.ndarray):
         """Normaliza el embedding actual, calcula las distancias contra todos
         los embeddings de registro y devuelve:
          el resultado de autorización y la distancia promedio."""
@@ -644,7 +644,7 @@ class EmbeddingCollector:
 
     """
 
-    def __init__(self, max_embeddings=30, skip_frames=3):
+    def __init__(self, max_embeddings:int=30, skip_frames:int=3):
         """Inicializa el recolector de embeddings con un límite y un salto de frames."""
 
         self.max_embeddings = max_embeddings
