@@ -2,20 +2,17 @@ import cv2 as cv
 import numpy as np
 import json
 
-from config import (
-    PUERTOARDUINO,
-    BAUDIOS,
-    UMBRAL_SIMILITUD,
-    MAX_EMBEDDINGS,
-    SKIP_FRAMES,
-    P_KALMAN,
-    Q_KALMAN,
-    R_KALMAN,
-    FRAMES_SIN_ROSTRO_PARA_RESET
+from config import P_KALMAN, Q_KALMAN, R_KALMAN
+
+
+from vision_core import (
+    Detector,
+    Tracker,
+    Visualizer,
+    Preprocessor,
+    FaceNetEmbedder,
+    normalize,
 )
-
-
-from vision_core import Detector, Tracker, Visualizer, Preprocessor, FaceNetEmbedder, normalize
 
 if __name__ == "__main__":
     detector = Detector()
@@ -55,8 +52,15 @@ if __name__ == "__main__":
                     print(f"⚠️ Frame descartado: {e}")
 
                 # Mostrar progreso
-                cv.putText(frame, f"Frames capturados: {len(embeddings)}", (30, 50),
-                           cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+                cv.putText(
+                    frame,
+                    f"Frames capturados: {len(embeddings)}",
+                    (30, 50),
+                    cv.FONT_HERSHEY_SIMPLEX,
+                    1,
+                    (0, 255, 0),
+                    2,
+                )
 
                 # Cuando llegues a 100 frames, salir
                 if len(embeddings) >= 100:
@@ -66,7 +70,7 @@ if __name__ == "__main__":
 
             cv.imshow("Registro Conductor", frame)
             frame_count += 1
-            if cv.waitKey(1) & 0xFF in [27, ord('q')]:
+            if cv.waitKey(1) & 0xFF in [27, ord("q")]:
                 break
 
     finally:

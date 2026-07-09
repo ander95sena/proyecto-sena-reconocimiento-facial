@@ -14,10 +14,17 @@ from config import (
     P_KALMAN,
     Q_KALMAN,
     R_KALMAN,
-    FRAMES_SIN_ROSTRO_PARA_RESET
+    FRAMES_SIN_ROSTRO_PARA_RESET,
 )
 
-from vision_core import Face, Detector, Tracker, Visualizer, Preprocessor, FaceNetEmbedder, normalize,FaceRecognition
+from vision_core import (
+    Detector,
+    Tracker,
+    Visualizer,
+    Preprocessor,
+    FaceNetEmbedder,
+    FaceRecognition,
+)
 
 
 class BaseSerial(ABC):
@@ -109,9 +116,6 @@ class serialArduino(BaseSerial):
         self.write(bytes([dato]))
 
 
-
-
-
 class EmbeddingCollector:
     """
     Administrador de embeddings faciales para procesos de registro o verificación.
@@ -173,18 +177,16 @@ class EmbeddingCollector:
         """Devuelve el número actual de embeddings recolectados."""
 
         return len(self.embeddings)
-    
+
     def debe_muestrear(self) -> bool:
         """Incrementa el contador de frames y dice si corresponde tomar una muestra ahora."""
         self.frame_count += 1
         return self.frame_count % self.skip_frames == 0
 
-
     def add(self, embedding: np.ndarray):
         """Agrega un embedding a la lista si se cumple la condición de salto de frames."""
 
         self.embeddings.append(embedding)
-
 
     def is_ready(self):
         """Retorna True si se alcanzó el número máximo de embeddings."""
@@ -274,7 +276,7 @@ class Messages:
             2,
         )
 
-    def MensajeResultado(self,autorizado: bool):
+    def MensajeResultado(self, autorizado: bool):
         """Devuelve el texto del resultado de verificación según la variable `autorizado`."""
 
         resultado = "CONDUCTOR AUTORIZADO" if autorizado else "CONDUCTOR NO AUTORIZADO"
@@ -282,7 +284,6 @@ class Messages:
 
 
 if __name__ == "__main__":
-
     """
         Punto de entrada principal del sistema de verificación de conductor mediante
         reconocimiento facial y comunicación con Arduino.
@@ -324,7 +325,6 @@ if __name__ == "__main__":
         procesamiento biométrico y control electrónico del vehículo.
     """
 
-
     arduino = serialArduino()
 
     arduino.iniciar()
@@ -362,7 +362,7 @@ if __name__ == "__main__":
 
     señal_arduino = 0  # 0 para no autorizado, 1 para autorizado
 
-    frames_sin_rostro = 0 # Contador de frames sin detección de rostro
+    frames_sin_rostro = 0  # Contador de frames sin detección de rostro
 
     try:
         while True:
@@ -374,7 +374,6 @@ if __name__ == "__main__":
             faces = detector.detect(frame)
 
             if faces:
-
                 frames_sin_rostro = 0  # Reiniciar contador si se detecta un rostro
 
                 face = detector.get_main_face(faces)
@@ -389,13 +388,11 @@ if __name__ == "__main__":
 
                 viz.draw_eyes(frame, face)
 
-
                 if collector.debe_muestrear():
                     embedding = embedder.get_embedding(frame, face)
                     collector.add(embedding)
 
                 messager.Mensajecontador_muestras(frame, collector)
-
 
                 if collector.is_ready():
                     embedding_actual = collector.get_average()
@@ -415,7 +412,6 @@ if __name__ == "__main__":
                     distancia_promedio = 0.0
                     frames_sin_rostro = 0
                     arduino.enviarSeñal(0)
-
 
             if resultado:
                 messager.Mensajeresultado_verificacion(frame, resultado)
