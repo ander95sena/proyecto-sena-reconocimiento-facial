@@ -34,7 +34,8 @@ class BaseSerial(ABC):
         write(data): Envía datos a través de la conexión serial.
         close(): Cierra la conexión serial.
     """
-    def __init__(self, puerto: str=PUERTOARDUINO, baudrate: int=BAUDIOS):
+
+    def __init__(self, puerto: str = PUERTOARDUINO, baudrate: int = BAUDIOS):
         self.port = puerto
         self.baudrate = baudrate
         self.is_open = True
@@ -48,6 +49,7 @@ class BaseSerial(ABC):
     def close(self) -> None:
         """Cierra la conexión serial."""
         pass
+
 
 class DummySerial(BaseSerial):
     """
@@ -66,6 +68,7 @@ class DummySerial(BaseSerial):
     def close(self) -> None:
         self.is_open = False
         print("[Dummy] Conexión simulada cerrada")
+
 
 class serialArduino(BaseSerial):
     """
