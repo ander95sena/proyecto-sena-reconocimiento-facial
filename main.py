@@ -8,6 +8,7 @@ import onnxruntime as ort
 import serial
 import time
 import serial.tools.list_ports
+from abc import ABC, abstractmethod
 from config import (
     PUERTOARDUINO,
     BAUDIOS,
@@ -20,40 +21,74 @@ from config import (
 )
 
 
-class DummySerial:
+class BaseSerial(ABC):
     """
-    Clase de simulación para una conexión serial cuando el Arduino
-    no está disponible o el puerto no puede abrirse.
+    Clase base abstracta para definir la interfaz de comunicación serial.
 
-    Esta clase imita el comportamiento básico de un objeto `serial.Serial`,
-    permitiendo que el programa continúe ejecutándose en modo "simulado"
-    sin necesidad de hardware conectado. Es útil para pruebas, depuración
-    y desarrollo de lógica cuando el dispositivo físico no está presente.
+    Esta clase establece los métodos que cualquier implementación de conexión
+    serial debe proporcionar, permitiendo la flexibilidad de usar tanto
+    conexiones reales como simuladas (DummySerial) sin cambiar la lógica
+    del programa principal.
 
-    Atributos:
-        port (str): Nombre del puerto simulado (ej. "COM3").
-        baudrate (int): Velocidad de transmisión simulada en baudios.
-        is_open (bool): Estado de la conexión (True si está "abierta").
-
-    Métodos:
-        write(data): Simula el envío de datos mostrando el contenido en consola.
-        close(): Cierra la conexión simulada y actualiza el estado interno.
+    Métodos abstractos:
+        write(data): Envía datos a través de la conexión serial.
+        close(): Cierra la conexión serial.
     """
-
-    def __init__(self, puerto: str, baudrate: int):
+    def __init__(self, puerto: str=PUERTOARDUINO, baudrate: int=BAUDIOS):
         self.port = puerto
         self.baudrate = baudrate
         self.is_open = True
+
+    @abstractmethod
+    def write(self, data: bytes) -> None:
+        """Envía datos por la conexión serial."""
+        pass
+
+    @abstractmethod
+    def close(self) -> None:
+        """Cierra la conexión serial."""
+        pass
+
+
+
+class DummySerial(BaseSerial):
+    """
+    Implementación simulada de una conexión serial.
+    """
+
+    def __init__(self, puerto: str, baudrate: int):
+        super().__init__(puerto, baudrate)
         print(
             f"⚠️ No se pudo conectar al puerto {puerto}. Usando conexión simulada (Dummy)."
         )
 
-    def write(self, data):
+    def write(self, data: bytes) -> None:
         print(f"[Dummy] Enviando datos simulados: {list(data)}")
 
-    def close(self):
+    def close(self) -> None:
         self.is_open = False
         print("[Dummy] Conexión simulada cerrada")
+
+class serialArduino(BaseSerial):
+    """
+    Implementación real de una conexión serial con Arduino.
+    """
+
+    def __init__(self, puerto: str, baudrate: int):
+        super().__init__(puerto, baudrate)
+        try:
+            puertos = [p.device for p in serial.tools.list_ports.comports()]
+            if puerto not in puertos:
+                raise serial.SerialException(f"Puerto {puerto} no encontrado")
+
+            self.conexion = serial.Serial(puerto, baudrate)
+            time.sleep(2)
+            print(f"✅ Conectado a {puerto} a {baudrate} baudios")
+        except serial.SerialException as e:
+            print(f"⚠️ Error de conectividad: {e}")
+            print("➡️ Activando conexión Dummy para pruebas de software.")
+            # Si falla, usar Dummy
+            self.conexion = DummySerial(puerto, baudrate)
 
 
 class serialArduino:
