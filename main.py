@@ -1,10 +1,6 @@
-from dataclasses import dataclass
 import cv2 as cv
 import numpy as np
 import json
-from insightface.app import FaceAnalysis
-from filterpy.kalman import KalmanFilter
-import onnxruntime as ort
 import serial
 import time
 import serial.tools.list_ports
