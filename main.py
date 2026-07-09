@@ -829,8 +829,6 @@ if __name__ == "__main__":
 
                 embedding = embedder.get_embedding(frame, face)
 
-                embedding = recognizer.normalize(embedding)
-
                 collector.add(embedding)
 
                 messager.Mensajecontador_muestras(frame, collector)
