@@ -1,0 +1,13 @@
+{
+    "version": "2.5",
+    "configurations": [
+        {
+            "name": "Python: Proyecto SENA",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/main.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        }
+    ]
+}

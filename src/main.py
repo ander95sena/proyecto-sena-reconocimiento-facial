@@ -1,7 +1,7 @@
 import cv2 as cv
 import numpy as np
 import json
-from config import (
+from modules.config import (
     PUERTOARDUINO,
     BAUDIOS,
     UMBRAL_SIMILITUD,
@@ -12,10 +12,10 @@ from config import (
     R_KALMAN,
     FRAMES_SIN_ROSTRO_PARA_RESET,
 )
-from conexionArduino import crear_conexion_arduino
-from messages import Messages
+from modules.conexionArduino import crear_conexion_arduino
+from modules.messages import Messages
 
-from vision_core import (
+from modules.vision_core import (
     Detector,
     Tracker,
     Visualizer,
@@ -225,14 +225,18 @@ if __name__ == "__main__":
                     embedding = embedder.get_embedding(frame, face)
                     collector.add(embedding)
 
-                messager.mostrar_contador_muestras(frame, collector.count(), MAX_EMBEDDINGS)
+                messager.mostrar_contador_muestras(
+                    frame, collector.count(), MAX_EMBEDDINGS
+                )
 
                 if collector.is_ready():
                     embedding_actual = collector.get_average()
 
                     autorizado, distancia_promedio = recognizer.verify(embedding_actual)
 
-                    resultado = messager.mostrar_resultado_verificacion(frame, autorizado)
+                    resultado = messager.mostrar_resultado_verificacion(
+                        frame, autorizado
+                    )
 
                     messager.mostrar_distancia_promedio(frame, distancia_promedio)
 
@@ -249,10 +253,8 @@ if __name__ == "__main__":
                     arduino.write(bytes([0]))
 
             if resultado:
-
                 messager.mostrar_resultado_verificacion(frame, autorizado)
                 messager.mostrar_distancia_promedio(frame, distancia_promedio)
-
 
                 # Enviar señal al Arduino según el resultado
 

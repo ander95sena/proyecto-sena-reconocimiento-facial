@@ -2,10 +2,10 @@ import cv2 as cv
 import numpy as np
 import json
 
-from config import P_KALMAN, Q_KALMAN, R_KALMAN
+from src.modules.config import P_KALMAN, Q_KALMAN, R_KALMAN
 
 
-from vision_core import (
+from src.modules.vision_core import (
     Detector,
     Tracker,
     Visualizer,

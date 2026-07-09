@@ -4,7 +4,7 @@ import serial
 import time
 import serial.tools.list_ports
 from abc import ABC, abstractmethod
-from config import (
+from modules.config import (
     PUERTOARDUINO,
     BAUDIOS,
 )
