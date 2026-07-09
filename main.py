@@ -543,7 +543,7 @@ class FaceRecognition:
 
     Parámetros
     ----------
-    embeddings_registro : list[np.ndarray]
+    embeddings_registro : np.ndarray
         Lista de embeddings faciales de referencia (registro autorizado).
     umbral : float, opcional
         Valor límite de distancia promedio para considerar al conductor
@@ -563,7 +563,7 @@ class FaceRecognition:
 
     """
 
-    def __init__(self, embeddings_registro: list[np.ndarray], umbral: float = UMBRAL_SIMILITUD):
+    def __init__(self, embeddings_registro: np.ndarray, umbral: float = UMBRAL_SIMILITUD):
         """Inicializa el sistema de verificación con embeddings de registro y un umbral de distancia."""
 
         self.embeddings_registro = embeddings_registro
@@ -651,7 +651,7 @@ class EmbeddingCollector:
 
         self.frame_count = 0
 
-        self.embeddings = []
+        self.embeddings: list[np.ndarray] = []
 
     def count(self):
         """Devuelve el número actual de embeddings recolectados."""
