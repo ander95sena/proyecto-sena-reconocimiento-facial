@@ -78,19 +78,21 @@ if __name__ == "__main__":
         cv.destroyAllWindows()
 
     # --- Procesamiento final ---
-    if embeddings:
-        # Dividir en 20 grupos de 5
+    if len(embeddings) >= 20:
         franjas = np.array_split(embeddings, 20)
 
-        # Promediar y normalizar cada franja
         embeddings_promediados = []
         for franja in franjas:
             emb = np.mean(franja, axis=0)
             emb_norm = normalize(emb)
             embeddings_promediados.append(emb_norm)
 
-        # Guardar en JSON
         with open("conductor.json", "w") as f:
             json.dump([emb.tolist() for emb in embeddings_promediados], f)
 
-        print("Se guardaron 20 embeddings normalizados en conductor.json")
+        print(f"Se guardaron {len(embeddings_promediados)} embeddings normalizados en conductor.json")
+    elif embeddings:
+        print(f"⚠️ Solo se capturaron {len(embeddings)} muestras (se necesitan al menos 20). "
+              "No se guardó conductor.json — vuelve a ejecutar el registro.")
+    else:
+        print("⚠️ No se capturó ningún embedding. No se guardó conductor.json.")
