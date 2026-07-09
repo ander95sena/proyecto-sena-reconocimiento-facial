@@ -90,9 +90,13 @@ if __name__ == "__main__":
         with open("conductor.json", "w") as f:
             json.dump([emb.tolist() for emb in embeddings_promediados], f)
 
-        print(f"Se guardaron {len(embeddings_promediados)} embeddings normalizados en conductor.json")
+        print(
+            f"Se guardaron {len(embeddings_promediados)} embeddings normalizados en conductor.json"
+        )
     elif embeddings:
-        print(f"⚠️ Solo se capturaron {len(embeddings)} muestras (se necesitan al menos 20). "
-              "No se guardó conductor.json — vuelve a ejecutar el registro.")
+        print(
+            f"⚠️ Solo se capturaron {len(embeddings)} muestras (se necesitan al menos 20). "
+            "No se guardó conductor.json — vuelve a ejecutar el registro."
+        )
     else:
         print("⚠️ No se capturó ningún embedding. No se guardó conductor.json.")
