@@ -7,7 +7,7 @@ from insightface.app import FaceAnalysis
 from filterpy.kalman import KalmanFilter
 import onnxruntime as ort
 import serial
-import times
+import time
 import serial.tools.list_ports 
 
 
