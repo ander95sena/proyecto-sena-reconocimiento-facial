@@ -27,6 +27,10 @@ from vision_core import (
 )
 
 
+import serial
+import serial.tools.list_ports
+
+
 class BaseSerial(ABC):
     """
     Clase base abstracta para definir la interfaz de comunicación serial.
@@ -36,6 +40,9 @@ class BaseSerial(ABC):
     conexiones reales como simuladas (DummySerial) sin cambiar la lógica
     del programa principal.
 
+    Nota: `is_open` NO se inicializa en `True` aquí a propósito — cada
+    subclase es responsable de fijar su propio estado real de conexión.
+
     Métodos abstractos:
         write(data): Envía datos a través de la conexión serial.
         close(): Cierra la conexión serial.
@@ -44,7 +51,7 @@ class BaseSerial(ABC):
     def __init__(self, puerto: str = PUERTOARDUINO, baudrate: int = BAUDIOS):
         self.port = puerto
         self.baudrate = baudrate
-        self.is_open = True
+        self.is_open = False  # cada subclase decide cuándo pasa a True
 
     @abstractmethod
     def write(self, data: bytes) -> None:
@@ -60,10 +67,15 @@ class BaseSerial(ABC):
 class DummySerial(BaseSerial):
     """
     Implementación simulada de una conexión serial.
+
+    Se usa como fallback cuando no hay un Arduino real conectado, para
+    poder seguir probando el resto del sistema (detección, verificación,
+    UI) sin que el hardware sea un bloqueante.
     """
 
     def __init__(self, puerto: str, baudrate: int):
         super().__init__(puerto, baudrate)
+        self.is_open = True
         print(
             f"⚠️ No se pudo conectar al puerto {puerto}. Usando conexión simulada (Dummy)."
         )
@@ -79,41 +91,54 @@ class DummySerial(BaseSerial):
 class serialArduino(BaseSerial):
     """
     Implementación real de una conexión serial con Arduino.
+
+    A diferencia de la versión anterior (`serialArduino`), esta clase NO
+    hace fallback internamente a `DummySerial` — esa decisión ahora vive
+    en la función factory `crear_conexion_arduino()`. Así, `RealSerial`
+    solo se preocupa de una cosa: hablar con un Arduino de verdad.
     """
 
     def __init__(self, puerto: str = PUERTOARDUINO, baudrate: int = BAUDIOS):
         super().__init__(puerto, baudrate)
-        try:
-            puertos = [p.device for p in serial.tools.list_ports.comports()]
-            if puerto not in puertos:
-                raise serial.SerialException(f"Puerto {puerto} no encontrado")
+        self._conexion = serial.Serial(puerto, baudrate)
+        time.sleep(2)  # esperar inicialización del dispositivo
+        self.is_open = self._conexion.is_open
 
-            self.conexion = serial.Serial(puerto, baudrate)
-            time.sleep(2)
-            print(f"✅ Conectado a {puerto} a {baudrate} baudios")
-        except serial.SerialException as e:
-            print(f"⚠️ Error de conectividad: {e}")
-            print("➡️ Activando conexión Dummy para pruebas de software.")
-            self.conexion = DummySerial(puerto, baudrate)
-
-    # Métodos abstractos obligatorios de BaseSerial
     def write(self, data: bytes) -> None:
-        if self.conexion and self.conexion.is_open:
-            self.conexion.write(data)
+        if self._conexion.is_open:
+            self._conexion.write(data)
         else:
-            print("⚠️ No hay conexión abierta")
+            print("⚠️ Intento de escritura con conexión cerrada")
 
     def close(self) -> None:
-        if self.conexion and self.conexion.is_open:
-            self.conexion.close()
+        if self._conexion.is_open:
+            self._conexion.close()
+            self.is_open = False
             print("🔌 Conexión cerrada")
 
-    # Métodos compatibles con tu código anterior
-    def iniciar(self) -> None:
-        print("🔌 Conexión iniciada (ya establecida en __init__)")
 
-    def enviarSeñal(self, dato: int) -> None:
-        self.write(bytes([dato]))
+def crear_conexion_arduino(
+    puerto: str = PUERTOARDUINO, baudrate: int = BAUDIOS
+) -> BaseSerial:
+    """
+    Fábrica: intenta abrir una conexión real con el Arduino en `puerto`.
+    Si el puerto no existe o falla la conexión, devuelve una `DummySerial`
+    en su lugar, para que el resto del programa pueda seguir funcionando
+    sin necesitar el hardware conectado.
+    """
+    try:
+        puertos_disponibles = [p.device for p in serial.tools.list_ports.comports()]
+        if puerto not in puertos_disponibles:
+            raise serial.SerialException(f"Puerto {puerto} no encontrado")
+
+        conexion = serialArduino(puerto, baudrate)
+        print(f"✅ Conectado a {puerto} a {baudrate} baudios")
+        return conexion
+
+    except serial.SerialException as e:
+        print(f"⚠️ Error de conectividad: {e}")
+        print("➡️ Activando conexión Dummy para pruebas de software.")
+        return DummySerial(puerto, baudrate)
 
 
 class EmbeddingCollector:
@@ -324,10 +349,7 @@ if __name__ == "__main__":
         Este bloque asegura la integración completa entre visión artificial,
         procesamiento biométrico y control electrónico del vehículo.
     """
-
-    arduino = serialArduino()
-
-    arduino.iniciar()
+    arduino = crear_conexion_arduino(PUERTOARDUINO, BAUDIOS)
 
     detector = Detector()
 
@@ -411,7 +433,7 @@ if __name__ == "__main__":
                     resultado = ""
                     distancia_promedio = 0.0
                     frames_sin_rostro = 0
-                    arduino.enviarSeñal(0)
+                    arduino.write(bytes([0]))
 
             if resultado:
                 messager.Mensajeresultado_verificacion(frame, resultado)
@@ -421,9 +443,9 @@ if __name__ == "__main__":
                 # Enviar señal al Arduino según el resultado
 
                 if resultado == "CONDUCTOR AUTORIZADO":
-                    arduino.enviarSeñal(1)
+                    arduino.write(bytes([1]))
                 else:
-                    arduino.enviarSeñal(0)
+                    arduino.write(bytes([0]))
 
             cv.imshow("Verificacion Conductor", frame)
 
