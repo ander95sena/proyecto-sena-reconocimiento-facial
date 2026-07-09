@@ -83,8 +83,10 @@ Mejoras:
 - CRC.
 - ACK.
 - Timeout.
+- conexion dummy(realizado)
+- clases con modularidad y facilidad para mas conexiones (completo)
 
-## Face
+## Face (realizado)
 Contenedor de datos del rostro.
 Mejora recomendada: convertir en @dataclass.
 
@@ -103,10 +105,11 @@ Mejoras:
 Filtro de Kalman.
 Agregar:
 - IDs persistentes.
-- Reacquisition.
+- Reacquisition(realizado).
 
 ## Visualizer
-Superposición gráfica.
+Superposición gráfica
+modularizar(en proceso).
 
 ## Preprocessor
 - Alineación afín.
@@ -123,8 +126,8 @@ Comparación mediante distancia euclidiana.
 Promedio temporal para mejorar estabilidad.
 
 ## Messages
-Mostrar resultados.
-Eliminar dependencias globales.
+Mostrar resultados(en mejora)
+Eliminar dependencias globales(completo)
 
 # 5. Mejoras al código
 
@@ -132,13 +135,13 @@ Eliminar dependencias globales.
 
 - Máquina de estados.
 - Logging.
-- Configuración externa.
+- Configuración externa(completado).
 - Manejo de excepciones.
-- Comunicación serial robusta.
+- Comunicación serial robusta(en mejora).
 - Clase principal VehicleRecognitionSystem.
 - Normalización única.
-- Dataclass.
-- Eliminar variables globales.
+- Dataclass(realizado).
+- Eliminar variables globales(realizado).
 
 # 6. Roadmap de módulos
 
