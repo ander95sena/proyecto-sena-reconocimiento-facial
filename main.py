@@ -49,8 +49,6 @@ class BaseSerial(ABC):
         """Cierra la conexión serial."""
         pass
 
-
-
 class DummySerial(BaseSerial):
     """
     Implementación simulada de una conexión serial.
@@ -74,7 +72,7 @@ class serialArduino(BaseSerial):
     Implementación real de una conexión serial con Arduino.
     """
 
-    def __init__(self, puerto: str, baudrate: int):
+    def __init__(self, puerto: str = PUERTOARDUINO, baudrate: int = BAUDIOS):
         super().__init__(puerto, baudrate)
         try:
             puertos = [p.device for p in serial.tools.list_ports.comports()]
@@ -87,72 +85,26 @@ class serialArduino(BaseSerial):
         except serial.SerialException as e:
             print(f"⚠️ Error de conectividad: {e}")
             print("➡️ Activando conexión Dummy para pruebas de software.")
-            # Si falla, usar Dummy
             self.conexion = DummySerial(puerto, baudrate)
 
-
-class serialArduino:
-    """
-    Clase para gestionar la comunicación serial entre Python y un Arduino.
-
-    Esta clase encapsula la configuración del puerto, la velocidad en baudios
-    y las operaciones básicas de conexión, envío de datos y cierre de la comunicación.
-
-    Atributos
-    ---------
-    puertoCom : str
-        Nombre del puerto COM al que está conectado el Arduino (por defecto "COM3").
-    baudios : int
-        Velocidad de transmisión en baudios (por defecto 9600).
-    conexion : serial.Serial | None
-        Objeto de conexión serial activo. Es None si no se ha iniciado la conexión.
-
-    Métodos
-    -------
-    iniciar():
-        Establece la conexión serial con el Arduino y espera 2 segundos
-        para permitir la inicialización del dispositivo.
-    enviarSeñal(dato: int):
-        Envía un byte al Arduino (valor entre 0 y 255).
-        Si la conexión no está abierta, muestra una advertencia.
-    cerrar():
-        Cierra la conexión serial si está abierta y confirma la acción.
-    """
-
-    def __init__(self, puerto: str = PUERTOARDUINO, baudrate: int = BAUDIOS):
-        self.puertoCom = puerto
-        self.baudios = baudrate
-        self.conexion = None
-
-    def iniciar(self):
-        """Intenta establecer la conexión serial. Si falla, usa Dummy."""
-        try:
-            # Verificar si el puerto existe
-            puertos = [p.device for p in serial.tools.list_ports.comports()]
-            if self.puertoCom not in puertos:
-                raise serial.SerialException(f"Puerto {self.puertoCom} no encontrado")
-
-            self.conexion = serial.Serial(self.puertoCom, self.baudios)
-            time.sleep(2)
-            print(f"✅ Conectado a {self.puertoCom} a {self.baudios} baudios")
-
-        except serial.SerialException as e:
-            print(f"⚠️ Error de conectividad: {e}")
-            print("➡️ Activando conexión Dummy para pruebas de software.")
-            self.conexion = DummySerial(self.puertoCom, self.baudios)
-
-    def enviarSeñal(self, dato: int):
-        """Envía un byte al Arduino o al Dummy."""
+    # Métodos abstractos obligatorios de BaseSerial
+    def write(self, data: bytes) -> None:
         if self.conexion and self.conexion.is_open:
-            self.conexion.write(bytes([dato]))
+            self.conexion.write(data)
         else:
             print("⚠️ No hay conexión abierta")
 
-    def cerrar(self):
-        """Cierra la conexión real o simulada."""
+    def close(self) -> None:
         if self.conexion and self.conexion.is_open:
             self.conexion.close()
             print("🔌 Conexión cerrada")
+
+    # Métodos compatibles con tu código anterior
+    def iniciar(self) -> None:
+        print("🔌 Conexión iniciada (ya establecida en __init__)")
+
+    def enviarSeñal(self, dato: int) -> None:
+        self.write(bytes([dato]))
 
 
 @dataclass
