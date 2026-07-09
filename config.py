@@ -4,5 +4,5 @@ MAX_EMBEDDINGS = 30  # Número máximo de embeddings a almacenar
 SKIP_FRAMES = 1  # Número de frames a saltar antes de procesar uno
 UMBRAL_SIMILITUD = 0.8  # Umbral de similitud para considerar un rostro como conocido
 P_KALMAN = 100.0  # valor de incertidumbre inicial para el filtro de Kalman
-R_KALMAN = 2.0  # valor de ruido de la medición para el filtro de Kalman
-Q_KALMAN = 0.1  # valor de ruido del proceso para el filtro de Kalman
+R_KALMAN = 0.1  # valor de ruido de la medición para el filtro de Kalman
+Q_KALMAN = 2  # valor de ruido del proceso para el filtro de Kalman
