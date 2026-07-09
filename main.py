@@ -661,16 +661,18 @@ class EmbeddingCollector:
         """Devuelve el número actual de embeddings recolectados."""
 
         return len(self.embeddings)
+    
+    def debe_muestrear(self) -> bool:
+        """Incrementa el contador de frames y dice si corresponde tomar una muestra ahora."""
+        self.frame_count += 1
+        return self.frame_count % self.skip_frames == 0
+
 
     def add(self, embedding: np.ndarray):
         """Agrega un embedding a la lista si se cumple la condición de salto de frames."""
 
-        self.frame_count += 1
-
-        if self.frame_count % self.skip_frames != 0:
-            return
-
         self.embeddings.append(embedding)
+
 
     def is_ready(self):
         """Retorna True si se alcanzó el número máximo de embeddings."""
@@ -831,7 +833,12 @@ if __name__ == "__main__":
 
                 collector.add(embedding)
 
+                if collector.debe_muestrear():
+                    embedding = embedder.get_embedding(frame, face)
+                    collector.add(embedding)
+
                 messager.Mensajecontador_muestras(frame, collector)
+
 
                 if collector.is_ready():
                     embedding_actual = collector.get_average()
