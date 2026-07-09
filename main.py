@@ -266,7 +266,7 @@ class Tracker:
     def __init__(self):
         self.kf = None
 
-    def init_filter(self, face: Face, P: float = 100.0, R: float = 2.0, Q: float = 0.1):
+    def init_filter(self, face: Face, P: float = P_KALMAN, R: float = R_KALMAN, Q: float = Q_KALMAN):
         """Inicializa el filtro de Kalman con el estado inicial del rostro detectado."""
 
         # Estado: [x, y, w, h, vx, vy] -> Agregamos velocidades vx, vy
@@ -313,7 +313,7 @@ class Tracker:
     def update(self, face: Face, P: float, Q: float, R: float):
         """Actualiza el filtro con una nueva medición y devuelve el rostro actualizado."""
         if self.kf is None:
-            self.init_filter(face, P, Q, R)
+            self.init_filter(face, P, R, Q)
             return face
 
         medida = np.array([face.x, face.y, face.w, face.h], dtype=np.float32)
@@ -829,9 +829,6 @@ if __name__ == "__main__":
 
                 viz.draw_eyes(frame, face)
 
-                embedding = embedder.get_embedding(frame, face)
-
-                collector.add(embedding)
 
                 if collector.debe_muestrear():
                     embedding = embedder.get_embedding(frame, face)
