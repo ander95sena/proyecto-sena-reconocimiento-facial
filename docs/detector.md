@@ -1,3 +1,3 @@
 # Detector
 
-::: main.Detector
+::: vision_core.Detector

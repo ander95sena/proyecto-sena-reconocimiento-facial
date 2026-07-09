@@ -1,3 +1,3 @@
 # FaceReconigtion
 
-::: main.FaceRecognition
+::: vision_core.FaceRecognition

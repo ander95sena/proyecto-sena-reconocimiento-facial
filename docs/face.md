@@ -1,3 +1,3 @@
 # Face
 
-::: main.Face
+::: vision_core.Face

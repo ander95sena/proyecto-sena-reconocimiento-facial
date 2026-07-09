@@ -1,4 +1,4 @@
 # Visualizer
 
-::: main.Visualizer
+::: vision_core.Visualizer
 

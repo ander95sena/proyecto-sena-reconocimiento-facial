@@ -1,3 +1,3 @@
 # Preprocessor
 
-::: main.Preprocessor
+::: vision_core.Preprocessor
