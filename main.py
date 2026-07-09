@@ -7,8 +7,18 @@ from filterpy.kalman import KalmanFilter
 import onnxruntime as ort
 import serial
 import time
-import serial.tools.list_ports 
-from config import PUERTOARDUINO, BAUDIOS, UMBRAL_SIMILITUD, MAX_EMBEDDINGS, SKIP_FRAMES, P_KALMAN, Q_KALMAN, R_KALMAN
+import serial.tools.list_ports
+from config import (
+    PUERTOARDUINO,
+    BAUDIOS,
+    UMBRAL_SIMILITUD,
+    MAX_EMBEDDINGS,
+    SKIP_FRAMES,
+    P_KALMAN,
+    Q_KALMAN,
+    R_KALMAN,
+)
+
 
 class DummySerial:
     """
@@ -266,7 +276,7 @@ class Tracker:
     def __init__(self):
         self.kf = None
 
-    def init_filter(self, face: Face,P:float=100.0,R:float=2.0,Q:float=0.1):
+    def init_filter(self, face: Face, P: float = 100.0, R: float = 2.0, Q: float = 0.1):
         """Inicializa el filtro de Kalman con el estado inicial del rostro detectado."""
 
         # Estado: [x, y, w, h, vx, vy] -> Agregamos velocidades vx, vy
@@ -310,10 +320,10 @@ class Tracker:
         self.kf.R = np.eye(4) * R  # Ruido de la medición (confianza en el detector)
         self.kf.Q = np.eye(6) * Q  # Ruido del proceso (dinámica del sistema)
 
-    def update(self, face: Face,P:float,Q:float,R:float):
+    def update(self, face: Face, P: float, Q: float, R: float):
         """Actualiza el filtro con una nueva medición y devuelve el rostro actualizado."""
         if self.kf is None:
-            self.init_filter(face,P,Q,R)
+            self.init_filter(face, P, Q, R)
             return face
 
         medida = np.array([face.x, face.y, face.w, face.h], dtype=np.float32)
@@ -563,7 +573,9 @@ class FaceRecognition:
 
     """
 
-    def __init__(self, embeddings_registro: np.ndarray, umbral: float = UMBRAL_SIMILITUD):
+    def __init__(
+        self, embeddings_registro: np.ndarray, umbral: float = UMBRAL_SIMILITUD
+    ):
         """Inicializa el sistema de verificación con embeddings de registro y un umbral de distancia."""
 
         self.embeddings_registro = embeddings_registro
@@ -643,7 +655,9 @@ class EmbeddingCollector:
 
     """
 
-    def __init__(self, max_embeddings:int=MAX_EMBEDDINGS, skip_frames:int=SKIP_FRAMES):
+    def __init__(
+        self, max_embeddings: int = MAX_EMBEDDINGS, skip_frames: int = SKIP_FRAMES
+    ):
         """Inicializa el recolector de embeddings con un límite y un salto de frames."""
 
         self.max_embeddings = max_embeddings
@@ -785,7 +799,9 @@ if __name__ == "__main__":
 
     recognizer = FaceRecognition(embeddings_registro, umbral=UMBRAL_SIMILITUD)
 
-    collector = EmbeddingCollector(max_embeddings=MAX_EMBEDDINGS, skip_frames=SKIP_FRAMES)
+    collector = EmbeddingCollector(
+        max_embeddings=MAX_EMBEDDINGS, skip_frames=SKIP_FRAMES
+    )
 
     cap = cv.VideoCapture(0)
 
@@ -811,7 +827,7 @@ if __name__ == "__main__":
             if faces:
                 face = detector.get_main_face(faces)
 
-                face = tracker.update(face,P_KALMAN,Q_KALMAN,R_KALMAN)
+                face = tracker.update(face, P_KALMAN, Q_KALMAN, R_KALMAN)
 
                 viz.draw_bbox(frame, face)
 
