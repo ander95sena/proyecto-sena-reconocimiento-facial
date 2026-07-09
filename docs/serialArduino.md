@@ -1,3 +1,3 @@
 # serialArduino
 
-::: main.serialArduino
+::: conexionArduino.serialArduino

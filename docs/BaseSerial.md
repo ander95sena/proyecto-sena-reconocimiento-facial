@@ -1,0 +1,3 @@
+# Detector
+
+::: conexionArduino.BaseSerial

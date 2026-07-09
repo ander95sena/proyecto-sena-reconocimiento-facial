@@ -1,3 +1,3 @@
 # DummySerial
 
-:::main.DummySerial
+:::conexionArduino.DummySerial

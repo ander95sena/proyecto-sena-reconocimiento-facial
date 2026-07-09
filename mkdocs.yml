@@ -26,4 +26,6 @@ nav:
   - preprocessor: preprocessor.md
   - serial_Arduino : serialArduino.md
   - dummy_Serial: dummySerial.md
+  - crear_conexion_arduino: crear_conexion_arduino.md
+  - BaseSerial: BaseSerial.md
   - visualizer: visualizer.md
