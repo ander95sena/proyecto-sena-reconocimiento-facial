@@ -8,7 +8,7 @@ import onnxruntime as ort
 import serial
 import time
 import serial.tools.list_ports 
-from config import *
+from config import PUERTOARDUINO, BAUDIOS, UMBRAL_SIMILITUD, MAX_EMBEDDINGS, SKIP_FRAMES, P_KALMAN, Q_KALMAN, R_KALMAN
 
 class DummySerial:
     """
