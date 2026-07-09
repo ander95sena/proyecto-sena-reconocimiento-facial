@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-
 import cv2 as cv
 import numpy as np
 import json
@@ -9,7 +8,7 @@ import onnxruntime as ort
 import serial
 import time
 import serial.tools.list_ports 
-
+from config import *
 
 class DummySerial:
     """
@@ -75,7 +74,7 @@ class serialArduino:
         Cierra la conexión serial si está abierta y confirma la acción.
     """
 
-    def __init__(self, puerto: str = "COM3", baudrate: int = 9600):
+    def __init__(self, puerto: str = PUERTOARDUINO, baudrate: int = BAUDIOS):
         self.puertoCom = puerto
         self.baudios = baudrate
         self.conexion = None
@@ -267,7 +266,7 @@ class Tracker:
     def __init__(self):
         self.kf = None
 
-    def init_filter(self, face: Face):
+    def init_filter(self, face: Face,P:float=100.0,R:float=2.0,Q:float=0.1):
         """Inicializa el filtro de Kalman con el estado inicial del rostro detectado."""
 
         # Estado: [x, y, w, h, vx, vy] -> Agregamos velocidades vx, vy
@@ -307,14 +306,14 @@ class Tracker:
             ]
         )
 
-        self.kf.P *= 100.0  # Incertidumbre inicial
-        self.kf.R = np.eye(4) * 2.0  # Ruido de la medición (confianza en el detector)
-        self.kf.Q = np.eye(6) * 0.1  # Ruido del proceso (dinámica del sistema)
+        self.kf.P *= P  # Incertidumbre inicial
+        self.kf.R = np.eye(4) * R  # Ruido de la medición (confianza en el detector)
+        self.kf.Q = np.eye(6) * Q  # Ruido del proceso (dinámica del sistema)
 
-    def update(self, face: Face):
+    def update(self, face: Face,P:float,Q:float,R:float):
         """Actualiza el filtro con una nueva medición y devuelve el rostro actualizado."""
         if self.kf is None:
-            self.init_filter(face)
+            self.init_filter(face,P,Q,R)
             return face
 
         medida = np.array([face.x, face.y, face.w, face.h], dtype=np.float32)
@@ -564,7 +563,7 @@ class FaceRecognition:
 
     """
 
-    def __init__(self, embeddings_registro: list[np.ndarray], umbral: float = 0.7):
+    def __init__(self, embeddings_registro: list[np.ndarray], umbral: float = UMBRAL_SIMILITUD):
         """Inicializa el sistema de verificación con embeddings de registro y un umbral de distancia."""
 
         self.embeddings_registro = embeddings_registro
@@ -644,7 +643,7 @@ class EmbeddingCollector:
 
     """
 
-    def __init__(self, max_embeddings:int=30, skip_frames:int=3):
+    def __init__(self, max_embeddings:int=MAX_EMBEDDINGS, skip_frames:int=SKIP_FRAMES):
         """Inicializa el recolector de embeddings con un límite y un salto de frames."""
 
         self.max_embeddings = max_embeddings
@@ -721,7 +720,7 @@ class Messages:
 
         cv.putText(
             frame,
-            f"Muestras: {collector.count()}/30",
+            f"Muestras: {collector.count()}/{MAX_EMBEDDINGS}",
             (20, 40),
             cv.FONT_HERSHEY_SIMPLEX,
             0.8,
@@ -784,9 +783,9 @@ if __name__ == "__main__":
     with open("conductor.json", "r") as f:
         embeddings_registro = np.array(json.load(f), dtype=np.float32)
 
-    recognizer = FaceRecognition(embeddings_registro, umbral=0.8)
+    recognizer = FaceRecognition(embeddings_registro, umbral=UMBRAL_SIMILITUD)
 
-    collector = EmbeddingCollector(max_embeddings=30, skip_frames=3)
+    collector = EmbeddingCollector(max_embeddings=MAX_EMBEDDINGS, skip_frames=SKIP_FRAMES)
 
     cap = cv.VideoCapture(0)
 
@@ -812,7 +811,7 @@ if __name__ == "__main__":
             if faces:
                 face = detector.get_main_face(faces)
 
-                face = tracker.update(face)
+                face = tracker.update(face,P_KALMAN,Q_KALMAN,R_KALMAN)
 
                 viz.draw_bbox(frame, face)
 
