@@ -867,3 +867,4 @@ if __name__ == "__main__":
         cap.release()
 
         cv.destroyAllWindows()
+        arduino.close()
