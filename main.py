@@ -712,7 +712,7 @@ class Messages:
     Mensajedistancia_promedio(frame: np.ndarray, distancia_promedio: float):
         Muestra la distancia promedio (o similitud) calculada contra los embeddings
         de referencia, con tres decimales.
-    MensajeResultado():
+    MensajeResultado(autorizado: bool):
         Devuelve el texto del resultado de verificación según la variable `autorizado`.
 
     """
@@ -760,7 +760,7 @@ class Messages:
             2,
         )
 
-    def MensajeResultado(self):
+    def MensajeResultado(self,autorizado: bool):
         """Devuelve el texto del resultado de verificación según la variable `autorizado`."""
 
         resultado = "CONDUCTOR AUTORIZADO" if autorizado else "CONDUCTOR NO AUTORIZADO"
@@ -840,7 +840,7 @@ if __name__ == "__main__":
 
                     autorizado, distancia_promedio = recognizer.verify(embedding_actual)
 
-                    resultado = messager.MensajeResultado()
+                    resultado = messager.MensajeResultado(autorizado)
 
                     collector.reset()
 
