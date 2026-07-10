@@ -7,3 +7,4 @@ P_KALMAN = 100.0  # valor de incertidumbre inicial para el filtro de Kalman
 R_KALMAN = 0.1  # valor de ruido de la medición para el filtro de Kalman
 Q_KALMAN = 2  # valor de ruido del proceso para el filtro de Kalman
 FRAMES_SIN_ROSTRO_PARA_RESET = 10  # ajusta según los FPS de tu cámara
+RUTA_JSON = "persistencia\\conductor.json"  # Ruta al archivo JSON para almacenar embeddings

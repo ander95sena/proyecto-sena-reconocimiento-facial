@@ -2,7 +2,7 @@ import cv2 as cv
 import numpy as np
 import json
 
-from modules.config import P_KALMAN, Q_KALMAN, R_KALMAN
+from modules.config import P_KALMAN, Q_KALMAN, R_KALMAN,RUTA_JSON
 
 
 from modules.vision_core import (
@@ -87,16 +87,16 @@ if __name__ == "__main__":
             emb_norm = normalize(emb)
             embeddings_promediados.append(emb_norm)
 
-        with open("conductor.json", "w") as f:
+        with open(RUTA_JSON, "w") as f:
             json.dump([emb.tolist() for emb in embeddings_promediados], f)
 
         print(
-            f"Se guardaron {len(embeddings_promediados)} embeddings normalizados en conductor.json"
+            f"Se guardaron {len(embeddings_promediados)} embeddings normalizados en {RUTA_JSON}"
         )
     elif embeddings:
         print(
             f"⚠️ Solo se capturaron {len(embeddings)} muestras (se necesitan al menos 20). "
-            "No se guardó conductor.json — vuelve a ejecutar el registro."
+            f"No se guardó {RUTA_JSON} — vuelve a ejecutar el registro."
         )
     else:
-        print("⚠️ No se capturó ningún embedding. No se guardó conductor.json.")
+        print(f"⚠️ No se capturó ningún embedding. No se guardó {RUTA_JSON}.")

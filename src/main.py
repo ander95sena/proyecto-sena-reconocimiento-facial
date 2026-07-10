@@ -11,6 +11,7 @@ from modules.config import (
     Q_KALMAN,
     R_KALMAN,
     FRAMES_SIN_ROSTRO_PARA_RESET,
+    RUTA_JSON
 )
 from modules.conexionArduino import crear_conexion_arduino
 from modules.messages import Messages
@@ -172,7 +173,7 @@ if __name__ == "__main__":
 
     embedder = FaceNetEmbedder("faceNet.onnx", preprocessor)
 
-    with open("conductor.json", "r") as f:
+    with open(RUTA_JSON, "r") as f:
         embeddings_registro = np.array(json.load(f), dtype=np.float32)
 
     recognizer = FaceRecognition(embeddings_registro, umbral=UMBRAL_SIMILITUD)
