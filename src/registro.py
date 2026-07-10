@@ -2,7 +2,7 @@ import cv2 as cv
 import numpy as np
 import json
 
-from configuraciones.config import P_KALMAN, Q_KALMAN, R_KALMAN, RUTA_JSON
+from configuraciones.config import P_KALMAN, Q_KALMAN, R_KALMAN, RUTA_JSON,RUTA_MODELO
 
 
 from modules.vision_core import (
@@ -19,7 +19,7 @@ if __name__ == "__main__":
     tracker = Tracker()
     viz = Visualizer()
     preprocessor = Preprocessor()
-    embedder = FaceNetEmbedder("faceNet.onnx", preprocessor)
+    embedder = FaceNetEmbedder(RUTA_MODELO, preprocessor)
 
     cap = cv.VideoCapture(0)
     if not cap.isOpened():
