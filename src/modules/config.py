@@ -1,3 +1,5 @@
+import os
+
 PUERTOARDUINO = "COM3"  # Cambia esto al puerto correcto de tu Arduino
 BAUDIOS = 9600  # Cambia esto a la velocidad correcta de tu Arduino
 MAX_EMBEDDINGS = 30  # Número máximo de embeddings a almacenar
@@ -7,4 +9,4 @@ P_KALMAN = 100.0  # valor de incertidumbre inicial para el filtro de Kalman
 R_KALMAN = 0.1  # valor de ruido de la medición para el filtro de Kalman
 Q_KALMAN = 2  # valor de ruido del proceso para el filtro de Kalman
 FRAMES_SIN_ROSTRO_PARA_RESET = 10  # ajusta según los FPS de tu cámara
-RUTA_JSON = "persistencia\\conductor.json"  # Ruta al archivo JSON para almacenar embeddings
+RUTA_JSON = os.path.join("persistencia", "conductor.json")

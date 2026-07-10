@@ -2,7 +2,7 @@ import cv2 as cv
 import numpy as np
 import json
 
-from modules.config import P_KALMAN, Q_KALMAN, R_KALMAN,RUTA_JSON
+from modules.config import P_KALMAN, Q_KALMAN, R_KALMAN, RUTA_JSON
 
 
 from modules.vision_core import (

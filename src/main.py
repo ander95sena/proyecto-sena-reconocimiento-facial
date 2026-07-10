@@ -11,7 +11,7 @@ from modules.config import (
     Q_KALMAN,
     R_KALMAN,
     FRAMES_SIN_ROSTRO_PARA_RESET,
-    RUTA_JSON
+    RUTA_JSON,
 )
 from modules.conexionArduino import crear_conexion_arduino
 from modules.messages import Messages
