@@ -4,15 +4,12 @@ import json
 
 from configuraciones.config import P_KALMAN, Q_KALMAN, R_KALMAN, RUTA_JSON, RUTA_MODELO
 
-
-from modules.vision_core import (
-    Detector,
-    Tracker,
-    Visualizer,
-    Preprocessor,
-    FaceNetEmbedder,
-    normalize,
-)
+from modules.detector import Detector
+from modules.tracker import Tracker
+from modules.visualizer import Visualizer
+from modules.preprosessing import Preprocessor
+from modules.embeder import FaceNetEmbedder
+from modules.preprosessing import normalize
 
 if __name__ == "__main__":
     detector = Detector()

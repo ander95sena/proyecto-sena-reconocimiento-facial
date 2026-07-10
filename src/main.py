@@ -16,107 +16,12 @@ from configuraciones.config import (
 )
 from modules.conexionArduino import crear_conexion_arduino
 from modules.messages import Messages
-
-from modules.vision_core import (
-    Detector,
-    Tracker,
-    Visualizer,
-    Preprocessor,
-    FaceNetEmbedder,
-    FaceRecognition,
-)
-
-
-class EmbeddingCollector:
-    """
-    Administrador de embeddings faciales para procesos de registro o verificación.
-
-    Esta clase se encarga de recolectar embeddings de manera controlada,
-    aplicando un salto de frames para evitar redundancia y limitando la
-    cantidad máxima de muestras. También provee métodos para calcular
-    el embedding promedio y reiniciar la colección.
-
-    Parámetros
-    ----------
-    max_embeddings : int, opcional
-        Número máximo de embeddings a recolectar (por defecto 30).
-    skip_frames : int, opcional
-        Número de frames a saltar entre cada captura de embedding
-        (por defecto 3).
-
-    Atributos
-    ---------
-    max_embeddings : int
-        Límite de embeddings a recolectar.
-    skip_frames : int
-        Intervalo de frames entre capturas.
-    frame_count : int
-        Contador de frames procesados.
-    embeddings : list
-        Lista de embeddings recolectados.
-
-    Métodos
-    -------
-    count():
-        Devuelve el número actual de embeddings recolectados.
-    add(embedding: np.ndarray):
-        Agrega un embedding a la lista si se cumple la condición de salto
-        de frames.
-    is_ready():
-        Retorna True si se alcanzó el número máximo de embeddings.
-    get_average():
-        Calcula y devuelve el embedding promedio de los recolectados.
-        Si no hay embeddings, retorna None.
-    reset():
-        Limpia la lista de embeddings y reinicia la colección.
-
-    """
-
-    def __init__(
-        self, max_embeddings: int = MAX_EMBEDDINGS, skip_frames: int = SKIP_FRAMES
-    ):
-        """Inicializa el recolector de embeddings con un límite y un salto de frames."""
-
-        self.max_embeddings = max_embeddings
-        self.skip_frames = skip_frames
-
-        self.frame_count = 0
-
-        self.embeddings: list[np.ndarray] = []
-
-    def count(self):
-        """Devuelve el número actual de embeddings recolectados."""
-
-        return len(self.embeddings)
-
-    def debe_muestrear(self) -> bool:
-        """Incrementa el contador de frames y dice si corresponde tomar una muestra ahora."""
-        self.frame_count += 1
-        return self.frame_count % self.skip_frames == 0
-
-    def add(self, embedding: np.ndarray):
-        """Agrega un embedding a la lista si se cumple la condición de salto de frames."""
-
-        self.embeddings.append(embedding)
-
-    def is_ready(self):
-        """Retorna True si se alcanzó el número máximo de embeddings."""
-
-        return len(self.embeddings) >= self.max_embeddings
-
-    def get_average(self):
-        """Calcula y devuelve el embedding promedio de los recolectados.
-        Si no hay embeddings, retorna None."""
-
-        if not self.embeddings:
-            return None
-
-        return np.mean(self.embeddings, axis=0)
-
-    def reset(self):
-        """Limpia la lista de embeddings y reinicia la colección."""
-
-        self.embeddings.clear()
+from modules.detector import Detector
+from modules.tracker import Tracker
+from modules.visualizer import Visualizer
+from modules.preprosessing import Preprocessor
+from modules.faceRecognition import FaceRecognition
+from modules.embeder import FaceNetEmbedder, EmbeddingCollector
 
 
 if __name__ == "__main__":
