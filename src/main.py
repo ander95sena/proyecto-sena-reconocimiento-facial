@@ -171,7 +171,7 @@ if __name__ == "__main__":
 
     preprocessor = Preprocessor()
 
-    embedder = FaceNetEmbedder("faceNet.onnx", preprocessor)
+    embedder = FaceNetEmbedder(RUTA_MODELO, preprocessor)
 
     with open(RUTA_JSON, "r") as f:
         embeddings_registro = np.array(json.load(f), dtype=np.float32)
