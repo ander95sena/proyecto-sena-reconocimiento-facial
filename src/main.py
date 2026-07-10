@@ -117,8 +117,6 @@ class EmbeddingCollector:
         self.embeddings.clear()
 
 
-
-
 if __name__ == "__main__":
     """
         Punto de entrada principal del sistema de verificación de conductor mediante
@@ -235,7 +233,6 @@ if __name__ == "__main__":
                     autorizado, distancia_promedio = recognizer.verify(embedding_actual)
 
                     resultado = messager.texto_resultado(autorizado)
-                    
 
                     messager.mostrar_distancia_promedio(frame, distancia_promedio)
 
