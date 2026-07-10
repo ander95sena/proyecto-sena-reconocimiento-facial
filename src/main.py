@@ -116,7 +116,7 @@ class EmbeddingCollector:
 
         self.embeddings.clear()
 
-        return resultado
+
 
 
 if __name__ == "__main__":
@@ -234,9 +234,8 @@ if __name__ == "__main__":
 
                     autorizado, distancia_promedio = recognizer.verify(embedding_actual)
 
-                    resultado = messager.mostrar_resultado_verificacion(
-                        frame, autorizado
-                    )
+                    resultado = messager.texto_resultado(autorizado)
+                    
 
                     messager.mostrar_distancia_promedio(frame, distancia_promedio)
 
