@@ -12,7 +12,7 @@ from configuraciones.config import (
     R_KALMAN,
     FRAMES_SIN_ROSTRO_PARA_RESET,
     RUTA_JSON,
-    RUTA_MODELO
+    RUTA_MODELO,
 )
 from modules.conexionArduino import crear_conexion_arduino
 from modules.messages import Messages

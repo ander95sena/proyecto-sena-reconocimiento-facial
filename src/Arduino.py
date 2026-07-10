@@ -1,7 +1,8 @@
 import serial
 import time
+from configuraciones.config import PUERTOARDUINO, BAUDIOS
 
-serialArduino = serial.Serial("COM3", 9600)
+serialArduino = serial.Serial(PUERTOARDUINO, BAUDIOS)
 time.sleep(2)  # Espera a que Arduino inicialice
 
 
