@@ -108,19 +108,19 @@ Agregar:
 - Reacquisition(realizado).
 
 ## Visualizer
-Superposición gráfica
-modularizar(en proceso).
+- Superposición gráfica (mejorada)
+- modularizar(en proceso).
 
 ## Preprocessor
-- Alineación afín.
-- RGB.
-- Normalización.
+- Alineación afín.(mejorada)
+- RGB.(mejorada)
+- Normalización (mejorada).
 
 ## FaceNetEmbedder
-Generación de embeddings.
+Generación de embeddings(mejorada).
 
 ## FaceRecognition
-Comparación mediante distancia euclidiana.
+Comparación mediante distancia euclidiana.(mejorada)
 
 ## EmbeddingCollector
 Promedio temporal para mejorar estabilidad.
@@ -139,7 +139,7 @@ Eliminar dependencias globales(completo)
 - Manejo de excepciones.
 - Comunicación serial robusta(en mejora).
 - Clase principal VehicleRecognitionSystem.
-- Normalización única.
+- Normalización única.(realizado)
 - Dataclass(realizado).
 - Eliminar variables globales(realizado).
 
