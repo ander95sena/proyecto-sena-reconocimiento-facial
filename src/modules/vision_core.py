@@ -4,7 +4,7 @@ import numpy as np
 from insightface.app import FaceAnalysis
 from filterpy.kalman import KalmanFilter
 import onnxruntime as ort
-from modules.config import UMBRAL_SIMILITUD, P_KALMAN, Q_KALMAN, R_KALMAN
+from configuraciones.config import UMBRAL_SIMILITUD, P_KALMAN, Q_KALMAN, R_KALMAN
 
 
 @dataclass

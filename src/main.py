@@ -1,7 +1,7 @@
 import cv2 as cv
 import numpy as np
 import json
-from modules.config import (
+from configuraciones.config import (
     PUERTOARDUINO,
     BAUDIOS,
     UMBRAL_SIMILITUD,
@@ -12,6 +12,7 @@ from modules.config import (
     R_KALMAN,
     FRAMES_SIN_ROSTRO_PARA_RESET,
     RUTA_JSON,
+    RUTA_MODELO
 )
 from modules.conexionArduino import crear_conexion_arduino
 from modules.messages import Messages
