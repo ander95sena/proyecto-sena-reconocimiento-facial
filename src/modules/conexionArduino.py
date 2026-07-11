@@ -3,16 +3,8 @@ import serial.tools.list_ports
 import serial
 import time
 from abc import ABC, abstractmethod
-from configuraciones.config import PUERTOARDUINO, BAUDIOS
-
-
-import serial
-import serial.tools.list_ports
-import time
-import logging
-from abc import ABC, abstractmethod
 from configuraciones.config import PUERTOARDUINO, BAUDIOS, TIMEOUT_SERIAL
-import logger
+import logging
 
 
 logger = logging.getLogger("arduino")
