@@ -1,6 +1,10 @@
 from modules.face import Face
 import numpy as np
 import cv2 as cv
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger("visualizer")
 
 
 class Visualizer:
@@ -32,6 +36,7 @@ class Visualizer:
 
         x1, y1, x2, y2 = face.bbox.astype(int)
         cv.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+        logger.debug(f"Rostro dibujado: x1={x1}, y1={y1}, x2={x2}, y2={y2}")
 
     def draw_landmarks(self, frame: np.ndarray, face: Face):
         """Dibuja los puntos clave (landmarks) del rostro en color azul sobre el fotograma."""
@@ -39,6 +44,9 @@ class Visualizer:
         if face.kps is not None:
             for lx, ly in face.kps.astype(int):
                 cv.circle(frame, (lx, ly), 2, (255, 0, 0), -1)
+        logger.debug(
+            f"Landmarks dibujados: {len(face.kps) if face.kps is not None else 0}"
+        )
 
     def draw_score(self, frame: np.ndarray, face: Face):
         """Muestra el puntaje de confianza de la detección sobre el rostro."""
@@ -52,6 +60,7 @@ class Visualizer:
             (0, 255, 0),
             2,
         )
+        logger.debug(f"Puntaje dibujado: {face.score:.2f}")
 
     def draw_eyes(self, frame: np.ndarray, face: Face):
         """Dibuja rectángulos alrededor de los ojos usando landmarks específicos."""
@@ -65,8 +74,11 @@ class Visualizer:
 
         # Tamaño adaptativo según el ancho de la cara
         tam = max(10, int(face.w * 0.1))
-
+        logger.debug(f"Tamaño de los ojos: {tam}")
         for ex, ey in [eye_left, eye_right]:
             cv.rectangle(
                 frame, (ex - tam, ey - tam), (ex + tam, ey + tam), (255, 0, 0), 2
             )
+        logger.debug(
+            f"Ojos dibujados en: left={eye_left}, right={eye_right}, tam={tam}"
+        )

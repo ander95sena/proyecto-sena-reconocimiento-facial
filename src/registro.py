@@ -1,6 +1,7 @@
 import cv2 as cv
 import numpy as np
 import json
+import logging
 
 from configuraciones.config import P_KALMAN, Q_KALMAN, R_KALMAN, RUTA_JSON, RUTA_MODELO
 
@@ -10,6 +11,9 @@ from modules.visualizer import Visualizer
 from modules.preprosessing import Preprocessor
 from modules.embeder import FaceNetEmbedder
 from modules.preprosessing import normalize
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger("main registro")
 
 if __name__ == "__main__":
     detector = Detector()
@@ -87,13 +91,14 @@ if __name__ == "__main__":
         with open(RUTA_JSON, "w") as f:
             json.dump([emb.tolist() for emb in embeddings_promediados], f)
 
-        print(
+        logger.info(
             f"Se guardaron {len(embeddings_promediados)} embeddings normalizados en {RUTA_JSON}"
         )
+
     elif embeddings:
-        print(
+        logger.warning(
             f"⚠️ Solo se capturaron {len(embeddings)} muestras (se necesitan al menos 20). "
             f"No se guardó {RUTA_JSON} — vuelve a ejecutar el registro."
         )
     else:
-        print(f"⚠️ No se capturó ningún embedding. No se guardó {RUTA_JSON}.")
+        logger.warning(f"⚠️ No se capturó ningún embedding. No se guardó {RUTA_JSON}.")

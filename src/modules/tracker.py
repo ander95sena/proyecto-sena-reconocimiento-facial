@@ -2,6 +2,10 @@ import numpy as np
 from filterpy.kalman import KalmanFilter
 from modules.face import Face
 from configuraciones.config import P_KALMAN, Q_KALMAN, R_KALMAN
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger("tracker")
 
 
 class Tracker:
@@ -37,6 +41,7 @@ class Tracker:
 
     def __init__(self):
         self.kf = None
+        logger.info("Tracker inicializado sin filtro de Kalman activo.")
 
     def init_filter(
         self, face: Face, P: float = P_KALMAN, R: float = R_KALMAN, Q: float = Q_KALMAN
@@ -83,6 +88,10 @@ class Tracker:
         self.kf.P *= P  # Incertidumbre inicial
         self.kf.R = np.eye(4) * R  # Ruido de la medición (confianza en el detector)
         self.kf.Q = np.eye(6) * Q  # Ruido del proceso (dinámica del sistema)
+        logger.info(
+            "Filtro de Kalman inicializado con estado: "
+            f"x={face.x}, y={face.y}, w={face.w}, h={face.h}"
+        )
 
     def update(self, face: Face, P: float, Q: float, R: float):
         """Actualiza el filtro con una nueva medición y devuelve el rostro actualizado."""
@@ -100,8 +109,10 @@ class Tracker:
 
         # Actualizamos el objeto Face original con la predicción filtrada
         face.bbox = np.array([x, y, x + w, y + h], dtype=np.float32)
+        logger.info(f"Rostro actualizado con coordenadas: x={x}, y={y}, w={w}, h={h}")
         return face
 
     def reset(self):
         """Limpia el filtro para forzar una reinicialización en la próxima detección."""
         self.kf = None
+        logger.info("Tracker reinicializado.")

@@ -1,5 +1,9 @@
 from dataclasses import dataclass
 import numpy as np
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger("face")
 
 
 @dataclass
@@ -51,27 +55,36 @@ class Face:
         self.bbox = bbox
         self.kps = landmarks
         self.score = score
+        logger.debug(f"""Face creada: bbox={bbox.tolist()}, 
+                    score={score}, 
+                    landmarks={landmarks.tolist() if landmarks is not None else None}""")
 
     @property
     def x(self):
+        logger.debug(f"Accediendo a x: {int(self.bbox[0])}")
         return int(self.bbox[0])
 
     @property
     def y(self):
+        logger.debug(f"Accediendo a y: {int(self.bbox[1])}")
         return int(self.bbox[1])
 
     @property
     def w(self):
+        logger.debug(f"Accediendo a w: {int(self.bbox[2] - self.bbox[0])}")
         return int(self.bbox[2] - self.bbox[0])
 
     @property
     def h(self):
+        logger.debug(f"Accediendo a h: {int(self.bbox[3] - self.bbox[1])}")
         return int(self.bbox[3] - self.bbox[1])
 
     @property
     def cx(self):
+        logger.debug(f"Accediendo a cx: {int(self.x + self.w / 2)}")
         return int(self.x + self.w / 2)
 
     @property
     def cy(self):
+        logger.debug(f"Accediendo a cy: {int(self.y + self.h / 2)}")
         return int(self.y + self.h / 2)

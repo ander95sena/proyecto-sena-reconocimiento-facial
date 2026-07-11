@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from configuraciones.config import PUERTOARDUINO, BAUDIOS, TIMEOUT_SERIAL
 import logging
 
-
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("arduino")
 
 """ 
@@ -21,7 +21,6 @@ ACK = 0x06
 NACK = 0x15
 
 
-
 class BaseSerial(ABC):
     """
     Clase base abstracta para definir la interfaz de comunicación serial.
@@ -30,7 +29,12 @@ class BaseSerial(ABC):
     subclase es responsable de fijar su propio estado real de conexión.
     """
 
-    def __init__(self, puerto: str = PUERTOARDUINO, baudrate: int = BAUDIOS, timeout: float = TIMEOUT_SERIAL):
+    def __init__(
+        self,
+        puerto: str = PUERTOARDUINO,
+        baudrate: int = BAUDIOS,
+        timeout: float = TIMEOUT_SERIAL,
+    ):
         self.port = puerto
         self.baudrate = baudrate
         self.timeout = timeout
@@ -68,7 +72,9 @@ class DummySerial(BaseSerial):
     def __init__(self, puerto: str, baudrate: int, timeout: float = TIMEOUT_SERIAL):
         super().__init__(puerto, baudrate, timeout)
         self.is_open = True
-        logger.warning(f"No se pudo conectar al puerto {puerto}. Usando conexión simulada (Dummy).")
+        logger.warning(
+            f"No se pudo conectar al puerto {puerto}. Usando conexión simulada (Dummy)."
+        )
 
     def write(self, data: bytes) -> None:
         logger.debug(f"[Dummy] Enviando datos simulados: {list(data)}")
@@ -98,7 +104,12 @@ class serialArduino(BaseSerial):
     (leer STX + comando + checksum, validar, y responder ACK/NACK).
     """
 
-    def __init__(self, puerto: str = PUERTOARDUINO, baudrate: int = BAUDIOS, timeout: float = TIMEOUT_SERIAL):
+    def __init__(
+        self,
+        puerto: str = PUERTOARDUINO,
+        baudrate: int = BAUDIOS,
+        timeout: float = TIMEOUT_SERIAL,
+    ):
         super().__init__(puerto, baudrate, timeout)
         self._conexion = serial.Serial(puerto, baudrate, timeout=timeout)
         time.sleep(2)  # esperar inicialización del dispositivo
@@ -125,7 +136,9 @@ class serialArduino(BaseSerial):
             pass  # ya estaba en mal estado, seguimos con el intento de reapertura
 
         try:
-            self._conexion = serial.Serial(self.port, self.baudrate, timeout=self.timeout)
+            self._conexion = serial.Serial(
+                self.port, self.baudrate, timeout=self.timeout
+            )
             time.sleep(2)
             self.is_open = self._conexion.is_open
             if self.is_open:
@@ -151,21 +164,31 @@ class serialArduino(BaseSerial):
 
                 self._conexion.reset_input_buffer()
                 self._conexion.write(frame)
-                respuesta = self._conexion.read(1)  # bloquea como máximo `timeout` segundos
+                respuesta = self._conexion.read(
+                    1
+                )  # bloquea como máximo `timeout` segundos
 
                 if respuesta == bytes([ACK]):
                     return True
                 elif respuesta == bytes([NACK]):
-                    logger.warning(f"Comando {comando} rechazado por checksum (NACK), intento {intento}/{reintentos}")
+                    logger.warning(
+                        f"Comando {comando} rechazado por checksum (NACK), intento {intento}/{reintentos}"
+                    )
                 else:
-                    logger.warning(f"Sin respuesta del Arduino (timeout), intento {intento}/{reintentos}")
+                    logger.warning(
+                        f"Sin respuesta del Arduino (timeout), intento {intento}/{reintentos}"
+                    )
 
             except serial.SerialException as e:
-                logger.error(f"Error de comunicación: {e}. Intento {intento}/{reintentos}")
+                logger.error(
+                    f"Error de comunicación: {e}. Intento {intento}/{reintentos}"
+                )
                 self.is_open = False
                 self._reconectar()
 
-        logger.error(f"No se pudo confirmar el comando {comando} tras {reintentos} intentos")
+        logger.error(
+            f"No se pudo confirmar el comando {comando} tras {reintentos} intentos"
+        )
         return False
 
     def close(self) -> None:
@@ -176,7 +199,9 @@ class serialArduino(BaseSerial):
 
 
 def crear_conexion_arduino(
-    puerto: str = PUERTOARDUINO, baudrate: int = BAUDIOS, timeout: float = TIMEOUT_SERIAL
+    puerto: str = PUERTOARDUINO,
+    baudrate: int = BAUDIOS,
+    timeout: float = TIMEOUT_SERIAL,
 ) -> BaseSerial:
     """
     Fábrica: intenta abrir una conexión real con el Arduino en `puerto`.

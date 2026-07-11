@@ -1,6 +1,10 @@
 import numpy as np
 from insightface.app import FaceAnalysis
 from modules.face import Face
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger("detector")
 
 
 class Detector:
@@ -32,6 +36,7 @@ class Detector:
             allowed_modules=["detection", "landmark_2d_106"],
         )
         self.app.prepare(ctx_id=0, det_size=(320, 320))
+        logger.info("Detector de rostros inicializado con éxito.")
 
     def detect(self, frame: np.ndarray):
         """Detecta rostros en un fotograma y devuelve una lista de objetos `Face`."""
@@ -41,10 +46,12 @@ class Detector:
         for f in faces_raw:
             landmarks = f.landmark_2d_106 if f.landmark_2d_106 is not None else f.kps
             faces.append(Face(f.bbox, landmarks, f.det_score))
+        logger.info(f"Rostros detectados: {len(faces)}")
         return faces
 
     def get_main_face(self, faces: list[Face]):
         """Selecciona el rostro principal de la lista, definido como el de mayor área."""
 
         face = max(faces, key=lambda f: f.w * f.h)
+        logger.info("Rostro principal seleccionado.")
         return face

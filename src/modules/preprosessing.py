@@ -1,6 +1,10 @@
 import numpy as np
 import cv2 as cv
 from modules.face import Face
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger("preprocessor")
 
 
 class Preprocessor:
@@ -51,15 +55,21 @@ class Preprocessor:
         # Aplicar transformación
         aligned = cv.warpAffine(frame, M, (160, 160))
 
+        logger.debug(
+            f"Rostro alineado: src_points={src_points.tolist()}, dst_points={dst_points.tolist()}"
+        )
+
         return aligned
 
     def preprocess(self, face_img: np.ndarray):
         """Convierte la imagen a RGB, normaliza los valores de píxel y devuelve un tensor listo para el modelo."""
         face_rgb = cv.cvtColor(face_img, cv.COLOR_BGR2RGB)
         face_normalized = face_rgb.astype(np.float32) / 127.5 - 1.0
+        logger.debug(f"Imagen preprocesada: shape={face_normalized.shape}")
         return np.expand_dims(face_normalized, axis=0)
 
 
 def normalize(embedding: np.ndarray) -> np.ndarray:
     """Normaliza un embedding dividiéndolo por su norma L2."""
+    logger.debug(f"Normalizando embedding: original_norm={np.linalg.norm(embedding)}")
     return embedding / np.linalg.norm(embedding)

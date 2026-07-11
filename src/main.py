@@ -22,7 +22,10 @@ from modules.visualizer import Visualizer
 from modules.preprosessing import Preprocessor
 from modules.faceRecognition import FaceRecognition
 from modules.embeder import FaceNetEmbedder, EmbeddingCollector
+import logging
 
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger("main")
 
 if __name__ == "__main__":
     """
@@ -81,6 +84,9 @@ if __name__ == "__main__":
 
     with open(RUTA_JSON, "r") as f:
         embeddings_registro = np.array(json.load(f), dtype=np.float32)
+    logger.debug(
+        f"Embeddings de registro cargados desde {RUTA_JSON}: {embeddings_registro.shape}"
+    )
 
     recognizer = FaceRecognition(embeddings_registro, umbral=UMBRAL_SIMILITUD)
 
@@ -91,7 +97,7 @@ if __name__ == "__main__":
     cap = cv.VideoCapture(0)
 
     if not cap.isOpened():
-        print("Error: no se pudo abrir la cámara")
+        logger.error("Error: no se pudo abrir la cámara")
         exit()
 
     resultado = ""
@@ -110,6 +116,7 @@ if __name__ == "__main__":
             faces = detector.detect(frame)
 
             if faces:
+                logger.debug(f"entro en el if faces: {len(faces)} rostros detectados")
                 frames_sin_rostro = 0  # Reiniciar contador si se detecta un rostro
 
                 face = detector.get_main_face(faces)
@@ -133,6 +140,7 @@ if __name__ == "__main__":
                 )
 
                 if collector.is_ready():
+                    logger.debug("entro en el if collector.is_ready()")
                     embedding_actual = collector.get_average()
 
                     autorizado, distancia_promedio = recognizer.verify(embedding_actual)
@@ -143,6 +151,7 @@ if __name__ == "__main__":
 
                     collector.reset()
             else:
+                logger.debug("No se detectó rostro en este frame.")
                 frames_sin_rostro += 1
 
                 if frames_sin_rostro >= FRAMES_SIN_ROSTRO_PARA_RESET:
@@ -151,28 +160,37 @@ if __name__ == "__main__":
                     resultado = ""
                     distancia_promedio = 0.0
                     frames_sin_rostro = 0
-                    arduino.enviar_comando(0,reintentos=2)  # Enviar señal de no autorizado al Arduino
+                    arduino.enviar_comando(
+                        0, reintentos=2
+                    )  # Enviar señal de no autorizado al Arduino
 
             if resultado:
+                logger.debug(f"entrando en if resultado: {resultado}")
                 messager.mostrar_resultado_verificacion(frame, autorizado)
                 messager.mostrar_distancia_promedio(frame, distancia_promedio)
 
                 # Enviar señal al Arduino según el resultado
-    
+
                 if resultado == "CONDUCTOR AUTORIZADO":
-                    arduino.enviar_comando(1,reintentos=2)  # Enviar señal de autorizado al Arduino
+                    logger.debug("Enviando señal de autorizado al Arduino")
+                    arduino.enviar_comando(
+                        1, reintentos=2
+                    )  # Enviar señal de autorizado al Arduino
                 else:
-                    arduino.enviar_comando(0,reintentos=2)  # Enviar señal de no autorizado al Arduino
+                    logger.debug("Enviando señal de no autorizado al Arduino")
+                    arduino.enviar_comando(
+                        0, reintentos=2
+                    )  # Enviar señal de no autorizado al Arduino
 
             cv.imshow("Verificacion Conductor", frame)
 
             tecla = cv.waitKey(1) & 0xFF
 
             if tecla == 27 or tecla == ord("q"):
+                logger.debug("Saliendo del programa...")
                 break
 
     finally:
         cap.release()
-
         cv.destroyAllWindows()
         arduino.close()

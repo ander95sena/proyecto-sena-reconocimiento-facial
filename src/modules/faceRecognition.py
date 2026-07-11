@@ -1,5 +1,9 @@
 import numpy as np
 from configuraciones.config import UMBRAL_SIMILITUD
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger("faceRecognition")
 
 
 class FaceRecognition:
@@ -43,12 +47,13 @@ class FaceRecognition:
 
     def normalize(self, embedding: np.ndarray):
         """Normaliza un embedding dividiéndolo por su norma L2."""
-
+        logger.debug(f"Normalizando embedding: {embedding}")
         return embedding / np.linalg.norm(embedding)
 
     def euclidian_distance(self, a: np.ndarray, b: np.ndarray):
         """Calcula la distancia euclidiana entre dos embeddings."""
-
+        logger.debug(f"Calculando distancia euclidiana entre {a} y {b}")
+        logger.debug(f"Distancia euclidiana: {float(np.linalg.norm(a - b))}")
         return float(np.linalg.norm(a - b))
 
     def verify(self, embedding_actual: np.ndarray):
@@ -66,5 +71,6 @@ class FaceRecognition:
         distancia_promedio = np.mean(distances)
 
         autorizado = distancia_promedio <= self.umbral
-
+        logger.info(f"""Verificación: {"Autorizado" if autorizado else "No autorizado"},
+                     Distancia promedio: {distancia_promedio:.4f}""")
         return autorizado, distancia_promedio

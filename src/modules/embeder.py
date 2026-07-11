@@ -3,6 +3,10 @@ from modules.face import Face
 from modules.preprosessing import Preprocessor
 import onnxruntime as ort
 from configuraciones.config import MAX_EMBEDDINGS, SKIP_FRAMES
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger("embedder")
 
 
 class FaceNetEmbedder:
@@ -56,6 +60,7 @@ class FaceNetEmbedder:
         self.embeddings_buffer = []
         # Si no pasas un preprocessor, crea uno por defecto
         self.preprocessor = preprocessor if preprocessor else Preprocessor()
+        logger.info(f"FaceNetEmbedder inicializado con modelo: {model_path}")
 
     def get_embedding(self, frame: np.ndarray, face: Face):
         """Obtiene el embedding de un rostro en un fotograma, aplicando alineación
@@ -65,6 +70,7 @@ class FaceNetEmbedder:
         aligned_face = self.preprocessor.align_face(frame, face)
         preprocessed = self.preprocessor.preprocess(aligned_face)
         embedding = self.session.run(None, {self.input_name: preprocessed})[0]
+        logger.info("Embedding obtenido con éxito.")
         return embedding[0]
 
     def add_embedding(self, frame: np.ndarray, face: Face):
@@ -72,6 +78,7 @@ class FaceNetEmbedder:
 
         emb = self.get_embedding(frame, face)
         self.embeddings_buffer.append(emb)
+        logger.info("Embedding agregado al buffer.")
 
     def get_average_embedding(self):
         """Devuelve el embedding promedio de todos los almacenados en el buffer.
@@ -79,6 +86,9 @@ class FaceNetEmbedder:
 
         if not self.embeddings_buffer:
             return None
+        logger.info(
+            f"Calculando embedding promedio de {len(self.embeddings_buffer)} embeddings."
+        )
         return np.mean(self.embeddings_buffer, axis=0)
 
 
@@ -138,25 +148,35 @@ class EmbeddingCollector:
         self.frame_count = 0
 
         self.embeddings: list[np.ndarray] = []
+        logger.info(
+            f"EmbeddingCollector inicializado con max_embeddings={max_embeddings}, skip_frames={skip_frames}"
+        )
 
     def count(self):
         """Devuelve el número actual de embeddings recolectados."""
 
+        logger.info(f"Conteo de embeddings: {len(self.embeddings)}")
         return len(self.embeddings)
 
     def debe_muestrear(self) -> bool:
         """Incrementa el contador de frames y dice si corresponde tomar una muestra ahora."""
         self.frame_count += 1
+        logger.info(
+            f"Frame count incrementado a {self.frame_count}. Debe muestrear: {self.frame_count % self.skip_frames == 0}"
+        )
         return self.frame_count % self.skip_frames == 0
 
     def add(self, embedding: np.ndarray):
         """Agrega un embedding a la lista si se cumple la condición de salto de frames."""
-
+        logger.info("Agregando embedding al buffer.")
         self.embeddings.append(embedding)
 
     def is_ready(self):
         """Retorna True si se alcanzó el número máximo de embeddings."""
 
+        logger.info(
+            f"Verificando si el recolector está listo: {len(self.embeddings) >= self.max_embeddings}"
+        )
         return len(self.embeddings) >= self.max_embeddings
 
     def get_average(self):
@@ -165,10 +185,13 @@ class EmbeddingCollector:
 
         if not self.embeddings:
             return None
-
+        logger.info(
+            f"Calculando embedding promedio de {len(self.embeddings)} embeddings."
+        )
         return np.mean(self.embeddings, axis=0)
 
     def reset(self):
         """Limpia la lista de embeddings y reinicia la colección."""
+        logger.info("Reinicio de  embedding collector.")
 
         self.embeddings.clear()
