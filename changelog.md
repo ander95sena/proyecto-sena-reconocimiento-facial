@@ -4,7 +4,30 @@
 Todos los cambios importantes del proyecto serán documentados en este archivo.
 
 ---
+## [v4.0] - 2026-07-11
+### 🚀 Añadido
+- Add logging functionality and improve code readability
 
+### 🔧 Cambiado
+- Update compiled Python bytecode for multiple modules
+- Update compiled Python bytecode for conexionArduino module
+- Update FaceNetEmbedder initialization to use RUTA_MODELO for model path
+- mejora de la modulizacion y la creacion de las importaciones
+- mejora de configuraciones
+
+### 🛠 Refactorizado
+- refactor: clean up import statements in conexionArduino.py
+- Refactor Arduino communication: Implement checksum protocol, add reconnection logic, and enhance logging
+- refactor: remove Arduino.py file as part of code cleanup
+- refactor: remove global ignore_missing_imports setting from mypy.ini
+- refactor: streamline import statements in conexionArduino.py
+
+### 🐞 Corregido
+- fix: update Arduino connection to use configurable port and baud rate
+
+### 📚 Documentación
+- mejora: actualizar secciones de Visualizer, Preprocessor, FaceNetEmbedder y FaceRecognition en la documentación
+---
 ## Changelog v 2.5
  
 Todos los cambios notables de este proyecto se documentan en este archivo.
