@@ -68,6 +68,7 @@ class FaceNetEmbedder:
 
         # Usar el preprocessor externo
         aligned_face = self.preprocessor.align_face(frame, face)
+        aligned_face = self.preprocessor.mejorar_iluminacion(aligned_face)
         preprocessed = self.preprocessor.preprocess(aligned_face)
         embedding = self.session.run(None, {self.input_name: preprocessed})[0]
         logger.info("Embedding obtenido con éxito.")

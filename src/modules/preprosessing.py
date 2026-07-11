@@ -8,6 +8,7 @@ logger = logging.getLogger("preprocessor")
 
 
 class Preprocessor:
+
     """
     Clase para alinear y preprocesar rostros antes de generar embeddings.
 
@@ -27,6 +28,24 @@ class Preprocessor:
         Convierte la imagen a RGB, normaliza los valores de píxel y devuelve un
         tensor listo para ser usado como entrada en un modelo de embeddings.
     """
+
+    def mejorar_iluminacion(self, face_img: np.ndarray) -> np.ndarray:
+        """
+        Normaliza el contraste local de la imagen usando CLAHE sobre el canal
+        de luminancia (espacio LAB), para reducir el efecto de iluminación
+        desigual (p. ej. luz lateral de ventana en la cabina de un vehículo)
+        sin distorsionar el balance de color.
+        """
+        lab = cv.cvtColor(face_img, cv.COLOR_BGR2LAB)
+        l, a, b = cv.split(lab)
+
+        clahe = cv.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        l_mejorado = clahe.apply(l)
+
+        lab_mejorado = cv.merge((l_mejorado, a, b))
+        return cv.cvtColor(lab_mejorado, cv.COLOR_LAB2BGR)
+
+
 
     def align_face(self, frame: np.ndarray, face: Face):
         """Alinea el rostro detectado usando landmarks clave y devuelve la cara transformada."""
