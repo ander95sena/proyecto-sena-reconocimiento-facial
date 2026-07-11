@@ -71,7 +71,7 @@ Arduino
 
 # 4. Clases actuales
 
-## serialArduino
+## serialArduino(completado)
 Responsabilidad:
 - Comunicación serial.
 - Inicialización.
@@ -79,10 +79,10 @@ Responsabilidad:
 - Cierre seguro.
 
 Mejoras:
-- Reconexión automática.
-- CRC.
-- ACK.
-- Timeout.
+- Reconexión automática.(realizado)
+- CRC.(realizado)
+- ACK.(realizado)
+- Timeout.(realizado)
 - conexion dummy(realizado)
 - clases con modularidad y facilidad para mas conexiones (completo)
 
@@ -115,17 +115,18 @@ Agregar:
 - Alineación afín.(mejorada)
 - RGB.(mejorada)
 - Normalización (mejorada).
+- implementacion de Clahe (implementado)
 
-## FaceNetEmbedder
+## FaceNetEmbedder(estable)
 Generación de embeddings(mejorada).
 
-## FaceRecognition
+## FaceRecognition(estable)
 Comparación mediante distancia euclidiana.(mejorada)
 
-## EmbeddingCollector
+## EmbeddingCollector(proceso)
 Promedio temporal para mejorar estabilidad.
 
-## Messages
+## Messages(mejorado)
 Mostrar resultados(en mejora)
 Eliminar dependencias globales(completo)
 
@@ -134,15 +135,15 @@ Eliminar dependencias globales(completo)
 ## Prioridad alta
 
 - Máquina de estados.
-- Logging.
+- Logging.(completado)
 - Configuración externa(completado).
 - Manejo de excepciones.
-- Comunicación serial robusta(en mejora).
+- Comunicación serial robusta(completado).
 - Clase principal VehicleRecognitionSystem.
 - Normalización única.(realizado)
 - Dataclass(realizado).
 - Eliminar variables globales(realizado).
-
+- implementacion de Clahe en preproccesor
 # 6. Roadmap de módulos
 
 ## Face Quality Assessment
@@ -176,13 +177,13 @@ Fusiona:
 - Calidad
 - Liveness
 
-## Driver Database Manager
+## Driver Database Manager(esta en version json 1 persona )
 CRUD de conductores.
 
 ## Vehicle State Manager
 Permite autenticación solo cuando el vehículo esté en estado seguro.
 
-## Event Logger
+## Event Logger(completo)
 Registro histórico.
 
 ## Metrics Manager
@@ -194,16 +195,16 @@ Reinicio automático.
 ## Fail Safe
 Modo seguro.
 
-## Hardware Communication Manager
+## Hardware Communication Manager (completado)
 CRC, ACK, retransmisión.
 
 ## Multi Face Manager
 Seguimiento de múltiples personas.
 
-## Security Layer
+## Security Layer(a futuro)
 Protección de datos y autenticación.
 
-## CAN Interface
+## CAN Interface(muy a futuro)
 Migración futura hacia CAN Bus.
 
 # 7. Arquitectura objetivo
