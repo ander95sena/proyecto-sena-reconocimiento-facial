@@ -10,6 +10,5 @@ R_KALMAN = 0.1  # valor de ruido de la medición para el filtro de Kalman
 Q_KALMAN = 2  # valor de ruido del proceso para el filtro de Kalman
 FRAMES_SIN_ROSTRO_PARA_RESET = 10  # ajusta según los FPS de tu cámara
 RUTA_JSON = os.path.join("persistencia", "conductor.json")  # Ruta de el archivo de json
-RUTA_MODELO = os.path.join(
-    "modelosIa", "faceNet.onnx"
-)  # Ruta del modelo face recognition
+RUTA_MODELO = os.path.join("modelosIa", "faceNet.onnx")  # Ruta del modelo face recognition
+TIMEOUT_SERIAL = 0.3  # Tiempo de espera para la comunicación serial con Arduino (en segundos)

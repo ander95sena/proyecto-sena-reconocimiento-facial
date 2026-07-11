@@ -98,8 +98,6 @@ if __name__ == "__main__":
 
     distancia_promedio = 0.0
 
-    señal_arduino = 0  # 0 para no autorizado, 1 para autorizado
-
     frames_sin_rostro = 0  # Contador de frames sin detección de rostro
 
     try:
@@ -153,18 +151,18 @@ if __name__ == "__main__":
                     resultado = ""
                     distancia_promedio = 0.0
                     frames_sin_rostro = 0
-                    arduino.write(bytes([0]))
+                    arduino.enviar_comando(0,reintentos=2)  # Enviar señal de no autorizado al Arduino
 
             if resultado:
                 messager.mostrar_resultado_verificacion(frame, autorizado)
                 messager.mostrar_distancia_promedio(frame, distancia_promedio)
 
                 # Enviar señal al Arduino según el resultado
-
+    
                 if resultado == "CONDUCTOR AUTORIZADO":
-                    arduino.write(bytes([1]))
+                    arduino.enviar_comando(1,reintentos=2)  # Enviar señal de autorizado al Arduino
                 else:
-                    arduino.write(bytes([0]))
+                    arduino.enviar_comando(0,reintentos=2)  # Enviar señal de no autorizado al Arduino
 
             cv.imshow("Verificacion Conductor", frame)
 
