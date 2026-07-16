@@ -39,7 +39,7 @@ class Preprocessor:
         lab = cv.cvtColor(face_img, cv.COLOR_BGR2LAB)
         l, a, b = cv.split(lab)
 
-        clahe = cv.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        clahe = cv.createCLAHE(clipLimit=1, tileGridSize=(4, 4))
         l_mejorado = clahe.apply(l)
 
         lab_mejorado = cv.merge((l_mejorado, a, b))
