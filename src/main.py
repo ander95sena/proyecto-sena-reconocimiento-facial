@@ -1,196 +1,194 @@
+import json
+import logging
 import cv2 as cv
 import numpy as np
-import json
+
 from configuraciones.config import (
-    PUERTOARDUINO,
     BAUDIOS,
-    UMBRAL_SIMILITUD,
+    FRAMES_SIN_ROSTRO_PARA_RESET,
     MAX_EMBEDDINGS,
-    SKIP_FRAMES,
     P_KALMAN,
+    PUERTOARDUINO,
     Q_KALMAN,
     R_KALMAN,
-    FRAMES_SIN_ROSTRO_PARA_RESET,
     RUTA_JSON,
     RUTA_MODELO,
+    SKIP_FRAMES,
+    UMBRAL_SIMILITUD,
 )
 from modules.conexionArduino import crear_conexion_arduino
-from modules.messages import Messages
 from modules.detector import Detector
+from modules.embeder import EmbeddingCollector, FaceNetEmbedder
+from modules.faceRecognition import FaceRecognition
+from modules.messages import Messages
+from modules.preprosessing import Preprocessor
 from modules.tracker import Tracker
 from modules.visualizer import Visualizer
-from modules.preprosessing import Preprocessor
-from modules.faceRecognition import FaceRecognition
-from modules.embeder import FaceNetEmbedder, EmbeddingCollector
-import logging
 
-logging.basicConfig(level=logging.DEBUG)
+# Logs limpios en consola
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+)
 logger = logging.getLogger("main")
 
+
+def procesar_deteccion_fatiga(frame, contador_frames):
+    """Módulo liviano para el monitoreo de fatiga.
+    
+    Incluye un contador en tiempo real e indicador visual para confirmar
+    su ejecución continua en pantalla.
+    """
+    # 1. Texto dinámico con el número de frame procesado en esta fase
+    texto = f"SISTEMA DE FATIGA ACTIVO | Frames procesados: {contador_frames}"
+    cv.putText(
+        frame,
+        texto,
+        (20, frame.shape[0] - 30),
+        cv.FONT_HERSHEY_SIMPLEX,
+        0.6,
+        (0, 255, 0),
+        2,
+    )
+
+    # 2. Indicador visual de 'vida' (Punto verde parpadeante cada ~0.5 segundos)
+    if (contador_frames // 15) % 2 == 0:
+        cv.circle(frame, (frame.shape[1] - 30, 30), 8, (0, 255, 0), -1)
+
+
 if __name__ == "__main__":
-    """
-        Punto de entrada principal del sistema de verificación de conductor mediante
-        reconocimiento facial y comunicación con Arduino.
-
-        Este bloque inicializa todos los componentes necesarios para el proceso:
-
-        - Conexión serial con Arduino (`serialArduino`), con fallback a Dummy si no hay hardware.
-        - Detector de rostros (`Detector`) y tracker con filtro de Kalman (`Tracker`).
-        - Visualizador (`Visualizer`) para dibujar bounding boxes, landmarks, ojos y puntajes.
-        - Mensajero (`Messages`) para mostrar resultados y métricas en pantalla.
-        - Preprocesador (`Preprocessor`) y generador de embeddings (`FaceNetEmbedder`).
-        - Carga de embeddings de referencia desde `conductor.json`.
-        - Reconocedor (`FaceRecognition`) que compara embeddings en vivo contra los registrados.
-        - Colector de embeddings (`EmbeddingCollector`) que promedia muestras en varios frames.
-        - Captura de video con OpenCV (`cv.VideoCapture`).
-
-        Flujo de ejecución:
-        -------------------
-        1. Se abre la cámara y se inicializan variables de estado.
-        2. En cada frame:
-        - Se detecta el rostro principal y se actualiza con el tracker.
-        - Se dibujan anotaciones visuales en la imagen.
-        - Se muestrean embeddings periódicamente y se acumulan en el colector.
-        - Cuando hay suficientes muestras, se calcula el embedding promedio y se verifica.
-        - Se muestra en pantalla el resultado (autorizado/no autorizado) y la distancia promedio.
-        - Se envía una señal al Arduino (1 = autorizado, 0 = no autorizado).
-        - Si no se detecta rostro por varios frames consecutivos, se reinician tracker y colector.
-        3. El bucle termina al presionar ESC o 'q'.
-        4. Se liberan recursos: cámara, ventanas de OpenCV y conexión serial.
-
-        Variables clave:
-        ----------------
-        - resultado (str): Mensaje de verificación actual.
-        - distancia_promedio (float): Distancia promedio de similitud entre embeddings.
-        - señal_arduino (int): Señal enviada al Arduino (0 o 1).
-        - frames_sin_rostro (int): Contador de frames sin detección de rostro.
-
-        Este bloque asegura la integración completa entre visión artificial,
-        procesamiento biométrico y control electrónico del vehículo.
-    """
+    # Inicialización de hardware y módulos de visión
     arduino = crear_conexion_arduino(PUERTOARDUINO, BAUDIOS)
 
     detector = Detector()
-
     tracker = Tracker()
-
     viz = Visualizer()
-
     messager = Messages()
-
     preprocessor = Preprocessor()
-
     embedder = FaceNetEmbedder(RUTA_MODELO, preprocessor)
 
+    # Carga de la base de datos de rostros conocidos
     with open(RUTA_JSON, "r") as f:
         embeddings_registro = np.array(json.load(f), dtype=np.float32)
-    logger.debug(
-        f"Embeddings de registro cargados desde {RUTA_JSON}: {embeddings_registro.shape}"
-    )
 
     recognizer = FaceRecognition(embeddings_registro, umbral=UMBRAL_SIMILITUD)
-
     collector = EmbeddingCollector(
         max_embeddings=MAX_EMBEDDINGS, skip_frames=SKIP_FRAMES
     )
 
     cap = cv.VideoCapture(0)
-
     if not cap.isOpened():
         logger.error("Error: no se pudo abrir la cámara")
         exit()
 
+    # --- ESTADOS PERSISTENTES ---
+    conductor_autorizado = False  # Bandera principal de sesión
     resultado = ""
-
     distancia_promedio = 0.0
 
-    frames_sin_rostro = 0  # Contador de frames sin detección de rostro
+    # Contador exclusivo para la Fase 1 (limpieza de buffers de autenticación)
+    frames_sin_rostro_autenticacion = 0
+
+    # Contador exclusivo para verificar visualmente la Fase 2 (Fatiga)
+    contador_frames_fatiga = 0
+
+    logger.info("Sistema iniciado. Esperando conductor para autenticación...")
 
     try:
         while True:
             ret, frame = cap.read()
-
             if not ret:
                 break
 
-            faces = detector.detect(frame)
+            # =========================================================
+            # FASE 1: AUTENTICACIÓN (Solo ejecuta mientras NO esté autorizado)
+            # =========================================================
+            if not conductor_autorizado:
+                # El detector pesado y el tracker se ejecutan ÚNICAMENTE aquí
+                faces = detector.detect(frame)
 
-            if faces:
-                logger.debug(f"entro en el if faces: {len(faces)} rostros detectados")
-                frames_sin_rostro = 0  # Reiniciar contador si se detecta un rostro
+                if faces:
+                    frames_sin_rostro_autenticacion = 0
 
-                face = detector.get_main_face(faces)
+                    face = detector.get_main_face(faces)
+                    face = tracker.update(face, P_KALMAN, Q_KALMAN, R_KALMAN)
 
-                face = tracker.update(face, P_KALMAN, Q_KALMAN, R_KALMAN)
+                    # Renderizado de la etapa de verificación
+                    viz.draw_bbox(frame, face)
+                    viz.draw_landmarks(frame, face)
+                    viz.draw_score(frame, face)
+                    viz.draw_eyes(frame, face)
 
-                viz.draw_bbox(frame, face)
+                    if collector.debe_muestrear():
+                        embedding = embedder.get_embedding(frame, face)
+                        collector.add(embedding)
 
-                viz.draw_landmarks(frame, face)
+                    messager.mostrar_contador_muestras(
+                        frame, collector.count(), MAX_EMBEDDINGS
+                    )
 
-                viz.draw_score(frame, face)
+                    if collector.is_ready():
+                        embedding_actual = collector.get_average()
+                        autorizado, distancia_promedio = recognizer.verify(
+                            embedding_actual
+                        )
 
-                viz.draw_eyes(frame, face)
+                        if autorizado:
+                            conductor_autorizado = True
+                            resultado = messager.texto_resultado(True)
+                            logger.info(
+                                "✅ CONDUCTOR AUTORIZADO. Enviando '1' a Arduino y desactivando tracker."
+                            )
 
-                if collector.debe_muestrear():
-                    embedding = embedder.get_embedding(frame, face)
-                    collector.add(embedding)
+                            # Envío único de la señal serial a Arduino
+                            if arduino and arduino.is_open:
+                                arduino.write(bytes([1]))
+                        else:
+                            resultado = messager.texto_resultado(False)
+                            logger.warning("❌ No autorizado. Reintentando...")
 
-                messager.mostrar_contador_muestras(
-                    frame, collector.count(), MAX_EMBEDDINGS
-                )
+                        collector.reset()
 
-                if collector.is_ready():
-                    logger.debug("entro en el if collector.is_ready()")
-                    embedding_actual = collector.get_average()
+                else:
+                    # Sin rostro durante la fase de autenticación
+                    frames_sin_rostro_autenticacion += 1
+                    if (
+                        frames_sin_rostro_autenticacion
+                        >= FRAMES_SIN_ROSTRO_PARA_RESET
+                    ):
+                        tracker.reset()
+                        collector.reset()
+                        resultado = ""
+                        distancia_promedio = 0.0
+                        frames_sin_rostro_autenticacion = 0
 
-                    autorizado, distancia_promedio = recognizer.verify(embedding_actual)
-
-                    resultado = messager.texto_resultado(autorizado)
-
+                # Renderizar estado de las pruebas de autenticación
+                if resultado:
+                    messager.mostrar_resultado_verificacion(frame, False)
                     messager.mostrar_distancia_promedio(frame, distancia_promedio)
 
-                    collector.reset()
+            # =========================================================
+            # FASE 2: MONITOREO DE FATIGA (Solo cuando YA está AUTORIZADO)
+            # =========================================================
             else:
-                logger.debug("No se detectó rostro en este frame.")
-                frames_sin_rostro += 1
+                # Se incrementa el contador de frames de la sesión de monitoreo
+                contador_frames_fatiga += 1
 
-                if frames_sin_rostro >= FRAMES_SIN_ROSTRO_PARA_RESET:
-                    tracker.reset()
-                    collector.reset()
-                    resultado = ""
-                    distancia_promedio = 0.0
-                    frames_sin_rostro = 0
-                    arduino.enviar_comando(
-                        0, reintentos=2
-                    )  # Enviar señal de no autorizado al Arduino
+                # Llamada al módulo de fatiga (Totalmente independiente de tracker/detector)
+                procesar_deteccion_fatiga(frame, contador_frames_fatiga)
 
-            if resultado:
-                logger.debug(f"entrando en if resultado: {resultado}")
-                messager.mostrar_resultado_verificacion(frame, autorizado)
+                # Notificación visual persistente de sesión autorizada
+                messager.mostrar_resultado_verificacion(frame, True)
                 messager.mostrar_distancia_promedio(frame, distancia_promedio)
 
-                # Enviar señal al Arduino según el resultado
-
-                if resultado == "CONDUCTOR AUTORIZADO":
-                    logger.debug("Enviando señal de autorizado al Arduino")
-                    arduino.enviar_comando(
-                        1, reintentos=2
-                    )  # Enviar señal de autorizado al Arduino
-                else:
-                    logger.debug("Enviando señal de no autorizado al Arduino")
-                    arduino.enviar_comando(
-                        0, reintentos=2
-                    )  # Enviar señal de no autorizado al Arduino
-
+            # Mostrar frame procesado en la ventana
             cv.imshow("Verificacion Conductor", frame)
 
             tecla = cv.waitKey(1) & 0xFF
-
             if tecla == 27 or tecla == ord("q"):
-                logger.debug("Saliendo del programa...")
                 break
 
     finally:
         cap.release()
         cv.destroyAllWindows()
-        arduino.close()
+        if arduino and arduino.is_open:
+            arduino.close()
